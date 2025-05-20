@@ -1,0 +1,16 @@
+{
+  "git": {
+    "requireBranch": "main",
+    "commitMessage": "chore(release): release v${version}",
+    "commit": true,
+    "tag": true,
+    "tagName": "v${version}",
+    "push": true
+  },
+  "npm": {
+    "publish": false
+  },
+  "hooks": {
+    "after:bump": "node scripts/release.mjs"
+  }
+}

@@ -16,6 +16,7 @@ function App() {
 
   const checkUpdate = async () => {
     const update = await check()
+    console.log('update', update)
     if (update) {
       console.log(`found update ${update.version} from ${update.date} with notes ${update.body}`)
       let downloaded = 0
@@ -42,9 +43,16 @@ function App() {
     }
   }
 
+  const checkUpdateRs = () => {
+    invoke('check_update')
+  }
+
   return (
     <main className="container">
-      <button onClick={checkUpdate}>检查更新</button>
+      <div>
+        <button onClick={checkUpdate}>检查更新</button>
+        <button onClick={checkUpdateRs}>检查更新rs</button>
+      </div>
 
       <h1>Welcome to Tauri + React</h1>
 
