@@ -3090,7 +3090,7 @@ dependencies = [
 
 [[package]]
 name = "rmst-tauri-test"
-version = "0.1.10"
+version = "0.1.1"
 dependencies = [
  "serde",
  "serde_json",
