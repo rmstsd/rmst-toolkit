@@ -4,6 +4,7 @@ use tauri::AppHandle;
 use tauri::Emitter; // 特质
 use tauri::Manager; // 特质
 
+use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_log::{Target, TargetKind, TimezoneStrategy};
 use tauri_plugin_updater::UpdaterExt;
 
@@ -52,6 +53,7 @@ pub fn run() {
   tauri::Builder::default()
     .plugin(tauri_plugin_process::init())
     .plugin(tauri_plugin_updater::Builder::new().build())
+    .plugin(tauri_plugin_clipboard_manager::init())
     .plugin(
       tauri_plugin_log::Builder::new()
         .timezone_strategy(TimezoneStrategy::UseLocal)
@@ -170,10 +172,10 @@ pub fn run() {
                     ww.show();
                     ww.set_focus();
 
-                    // let clipboard_text = _app.clipboard().read_text().unwrap_or_default();
-                    // let text = clipboard_text.trim().to_string();
+                    let clipboard_text = _app.clipboard().read_text().unwrap_or_default();
+                    let text = clipboard_text.trim().to_string();
 
-                    // _app.emit_to("setting", "showQrCode", text);
+                    _app.emit_to("setting", "showQrCode", text);
                   }
                   ShortcutState::Released => {
                     // println!("Ctrl-N Released!");
