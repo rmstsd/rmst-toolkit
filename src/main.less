@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.drag-bar {
+  width: 100px;
+  height: 100px;
+  background-color: pink;
+  user-select: none;
+}
+
+:root {
+  color: #333;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  margin: 0;
+}
+
+body {
+  margin: 0;
+}
+
+strong {
+  display: inline-block;
+}
+
+.setting-page-root {
+  .arco-tabs-header {
+    padding-top: 40px;
+  }
+}
+
+.option-item {
+  &:hover {
+    color: #1d2129;
+    background-color: #f2f3f5;
+  }
+}
+
+.s-tipInfo {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  padding: 0 10px;
+  color: #777;
+  font-size: 18px;
+  border-left: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .arco-radio-group {
+    * {
+      transition-duration: 0s;
+    }
+  }
+}
+
+.open-dir {
+  .arco-select-option:not(.arco-select-option-hover):hover {
+    background-color: rgb(249, 249, 249);
+  }
+}
+
+.quick-input {
+  .drag-handle {
+    height: 20px;
+    background-color: orange;
+  }
+}

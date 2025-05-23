@@ -1,17 +1,16 @@
-import { invoke } from '@tauri-apps/api/core'
-import './App.css'
+import OpenFolder from './pages/OpenFolder'
+import Setting from './pages/Setting'
+import QuickInput from './pages/QuickInput'
 
 function App() {
-  const checkUpdateRs = () => {
-    invoke('check_update')
-  }
+  const hash = location.hash.slice(1)
 
   return (
-    <main className="container">
-      <div>
-        <button onClick={checkUpdateRs}>检查更新 by rust</button>
-      </div>
-    </main>
+    <>
+      {hash === 'openFolder' && <OpenFolder />}
+      {hash === 'setting' && <Setting />}
+      {hash === 'quickInput' && <QuickInput />}
+    </>
   )
 }
 

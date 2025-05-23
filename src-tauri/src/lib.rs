@@ -1,3 +1,4 @@
+use tauri::AppHandle;
 use tauri_plugin_updater::UpdaterExt;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -21,16 +22,29 @@ async fn check_update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()>
 
     println!("update installed");
     app.restart();
+  } else {
+    println!("no update available");
   }
 
   Ok(())
+}
+
+#[tauri::command]
+fn get_version(app: AppHandle) -> String {
+  let v = app.package_info().version.clone();
+
+  let mut version = v.to_string();
+
+  dbg!(&version);
+
+  version
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
     .plugin(tauri_plugin_updater::Builder::new().build())
-    .invoke_handler(tauri::generate_handler![check_update])
+    .invoke_handler(tauri::generate_handler![check_update, get_version])
     .setup(|app| {
       #[cfg(desktop)]
       app

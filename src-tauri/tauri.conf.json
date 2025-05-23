@@ -11,9 +11,11 @@
   "app": {
     "windows": [
       {
-        "title": "rmst-tauri-test",
+        "label": "setting",
+        "title": "设置",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "url": "index.html/#setting"
       }
     ],
     "security": {
