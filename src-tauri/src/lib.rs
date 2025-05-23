@@ -52,6 +52,44 @@ pub fn run() {
         .handle()
         .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {}));
 
+      {
+        //
+        use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
+        use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+        let m2 = MenuItem::with_id(app, "setting", "设置", true, None::<&str>)?;
+        let restart = MenuItem::with_id(app, "restart", "重启", true, None::<&str>)?;
+        let quit_i = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
+        let separator = &PredefinedMenuItem::separator(app).unwrap();
+        let menu = Menu::with_items(app, &[&m2, separator, &restart, &quit_i])?;
+        let tray = TrayIconBuilder::new()
+          .menu(&menu)
+          .show_menu_on_left_click(false)
+          .icon(app.default_window_icon().unwrap().clone())
+          .on_menu_event(|app, event| match event.id.as_ref() {
+            "quit" => {
+              app.exit(0);
+            }
+            "restart" => {
+              app.restart();
+            }
+            _ => {
+              println!("未匹配 {:?}", event.id)
+            }
+          })
+          .on_tray_icon_event(|tray, evt| match evt {
+            TrayIconEvent::Click {
+              position,
+              rect,
+              button: MouseButton::Right,
+              button_state: MouseButtonState::Up,
+              ..
+            } => {
+              dbg!(&position);
+            }
+            _ => {}
+          })
+          .build(app)?;
+      }
       Ok(())
     })
     .run(tauri::generate_context!())
