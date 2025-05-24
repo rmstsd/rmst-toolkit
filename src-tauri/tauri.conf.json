@@ -13,9 +13,33 @@
       {
         "label": "setting",
         "title": "设置",
+        "url": "index.html/#setting",
+        "visible": false,
         "width": 1200,
         "height": 800,
-        "url": "index.html/#setting"
+        "center": true
+      },
+      {
+        "label": "openFolder",
+        "url": "index.html/#openFolder",
+        "skipTaskbar": true,
+        "center": true,
+        "resizable": false,
+        "visible": false,
+        "decorations": false
+      },
+      {
+        "label": "quickInput",
+        "url": "index.html/#quickInput",
+        "skipTaskbar": true,
+        "visible": false,
+        "width": 400,
+        "height": 200,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "maximizable": false,
+        "minimizable": false,
+        "resizable": false
       }
     ],
     "security": {

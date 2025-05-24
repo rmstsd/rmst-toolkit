@@ -1,9 +1,12 @@
+mod commands;
+
 use log::info;
 use tauri::AppHandle;
 
 use tauri::Emitter; // 特质
 use tauri::Manager; // 特质
 
+use tauri::WindowEvent;
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_log::{Target, TargetKind, TimezoneStrategy};
 use tauri_plugin_updater::UpdaterExt;
@@ -55,6 +58,8 @@ pub fn run() {
     .plugin(tauri_plugin_updater::Builder::new().build())
     .plugin(tauri_plugin_clipboard_manager::init())
     .plugin(tauri_plugin_store::Builder::default().build())
+    .plugin(tauri_plugin_dialog::init())
+    .plugin(tauri_plugin_os::init())
     .plugin(
       tauri_plugin_log::Builder::new()
         .timezone_strategy(TimezoneStrategy::UseLocal)
@@ -65,13 +70,73 @@ pub fn run() {
         ])
         .build(),
     )
-    .invoke_handler(tauri::generate_handler![check_update, get_version])
+    .invoke_handler(tauri::generate_handler![
+      check_update,
+      get_version,
+      commands::openWin,
+      commands::importSetting,
+      commands::exportSetting,
+      commands::saveSetting,
+      commands::getSetting,
+      commands::clearStore,
+      commands::getHistoryOpenedUrls,
+      commands::clearHistoryOpenedUrls,
+      commands::killPort,
+      commands::getProjectNamesTree,
+      commands::openFolderEditor,
+      commands::hideDirWindow,
+      commands::setDirWindowSize,
+      commands::page_loaded,
+      commands::hideWindow,
+      commands::CopyAndPaste,
+      commands::updateQuickInputWindowSize,
+      commands::hideQuickInputWindow,
+      commands::get_package_info,
+      commands::checkUpdateRust,
+      commands::downloadAndInstall,
+      commands::saveCommands,
+      commands::getCommands,
+      commands::execCommand,
+    ])
+    .on_window_event(|window, evt| match evt {
+      WindowEvent::CloseRequested { api, .. } => match window.label() {
+        "setting" | "openFolder" | "quickInput" => {
+          api.prevent_close();
+          window.hide();
+        }
+        _ => {}
+      },
+      WindowEvent::Focused(focused) => {
+        if (window.label() == "openFolder") {
+          if (!focused) {
+            // let closure = || println!("异步任务");
+            // let hand = tokio::spawn(async move {
+            //   sleep(Duration::from_millis(1000)).await;
+            //   closure();
+            // });
+
+            // window.hide();
+          }
+        }
+
+        let app = window.app_handle();
+        app.emit_to("openFolder", "focusChanged", focused).unwrap();
+      }
+      _ => {}
+    })
+    .on_webview_event(|window, event| {
+      dbg!(&event);
+    })
+    .on_page_load(|ww, payload| {
+      dbg!(&payload.event());
+    })
     .setup(|app| {
       #[cfg(desktop)]
       app.handle().plugin(tauri_plugin_single_instance::init(
         |app: &AppHandle, args, cwd| {},
       ));
 
+      // 托盘
       {
         //
         use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
@@ -86,6 +151,16 @@ pub fn run() {
           .show_menu_on_left_click(false)
           .icon(app.default_window_icon().unwrap().clone())
           .on_menu_event(|app, event| match event.id.as_ref() {
+            "setting" => {
+              let settingWindow: tauri::WebviewWindow = app.get_webview_window("setting").unwrap();
+
+              if settingWindow.is_minimized().unwrap_or(false) {
+                settingWindow.unminimize();
+              }
+
+              settingWindow.show();
+              settingWindow.set_focus();
+            }
             "quit" => {
               app.exit(0);
             }
@@ -111,6 +186,7 @@ pub fn run() {
           .build(app)?;
       }
 
+      // 快捷键
       {
         use tauri_plugin_global_shortcut::{
           Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState,
