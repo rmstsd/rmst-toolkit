@@ -3586,7 +3586,7 @@ dependencies = [
 
 [[package]]
 name = "rmst-toolkit"
-version = "0.1.16"
+version = "0.1.17"
 dependencies = [
  "enigo",
  "log",
