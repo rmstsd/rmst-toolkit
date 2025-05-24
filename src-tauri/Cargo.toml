@@ -1,5 +1,5 @@
 [package]
-name = "rmst-tauri-test"
+name = "rmst-toolkit"
 version = "0.1.14"
 description = "A Tauri App"
 authors = ["you"]

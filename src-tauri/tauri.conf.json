@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "rmst-tauri-test",
-  "identifier": "com.rmst-tauri-test.app",
+  "productName": "rmst-toolkit",
+  "identifier": "com.rmst-toolkit.app",
   "build": {
     "beforeDevCommand": "pnpm dev-web",
     "devUrl": "http://localhost:1422",
@@ -62,7 +62,7 @@
   "plugins": {
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkxNDc0QTUyNUVGN0ZGMEYKUldRUC8vZGVVa3BIa1ZSNHp2blZUUmtTK2RvSlo4NnEra21OU1N6Ujhoa2crczRXV3dDZkpFalMK",
-      "endpoints": ["https://github.com/rmstsd/rmst-tauri-test/releases/latest/download/latest.json"],
+      "endpoints": ["https://github.com/rmstsd/rmst-toolkit/releases/latest/download/latest.json"],
       "windows": {
         "installMode": "basicUi"
       }

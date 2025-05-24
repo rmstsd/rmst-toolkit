@@ -3585,7 +3585,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rmst-tauri-test"
+name = "rmst-toolkit"
 version = "0.1.14"
 dependencies = [
  "enigo",
