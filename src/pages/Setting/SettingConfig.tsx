@@ -1,9 +1,22 @@
 import { SettingData } from '../../type'
-import { invoke } from '@tauri-apps/api/core'
+import { Channel, invoke } from '@tauri-apps/api/core'
 // import { info as logInfo, error as logError } from '@tauri-apps/plugin-log'
-import { Button, Divider, Form, Input, Link, Message, Modal, Switch, Tag, Typography } from '@arco-design/web-react'
+import {
+  Button,
+  Divider,
+  Form,
+  Input,
+  Link,
+  Message,
+  Modal,
+  Progress,
+  Switch,
+  Tag,
+  Typography
+} from '@arco-design/web-react'
 import { IconDelete } from '@arco-design/web-react/icon'
 import { useEffect, useState } from 'react'
+import Updater from './Updater'
 // import { check } from '@tauri-apps/plugin-updater'
 // import { relaunch } from '@tauri-apps/plugin-process'
 
@@ -25,14 +38,8 @@ export default function Setting() {
   const [form] = Form.useForm<SettingData>()
 
   const [appInfo, setAppInfo] = useState({} as any)
-  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    invoke('get_version').then(version => {
-      console.log(version)
-      appInfo.version = version
-      setAppInfo({ ...appInfo })
-    })
     getSettingData()
 
     invoke('get_package_info').then(data => {
@@ -76,12 +83,6 @@ export default function Setting() {
     })
   }
 
-  interface Update {
-    needUpdate: boolean
-    current_version: string
-    version: string
-  }
-
   return (
     <div>
       <Form className="pr-[10%]" form={form} autoComplete="off">
@@ -96,7 +97,7 @@ export default function Setting() {
 
         <Form.Item label=" " className="sticky top-0 z-10 mt-2 bg-white border-b pb-2 pt-2">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 onClick={() => logError('测试 log')}>设置</h2>
+            <h2>设置</h2>
             <Button type="primary" onClick={saveHandler}>
               保存
             </Button>
@@ -113,9 +114,7 @@ export default function Setting() {
               清空本地缓存
             </Button>
 
-            <Button onClick={() => invoke('check_update')} loading={loading}>
-              检查更新 rs v2
-            </Button>
+            <Updater />
           </div>
         </Form.Item>
 

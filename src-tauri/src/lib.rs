@@ -1,4 +1,5 @@
 mod commands;
+mod tray;
 
 use log::info;
 use tauri::AppHandle;
@@ -10,46 +11,6 @@ use tauri::WindowEvent;
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_log::{Target, TargetKind, TimezoneStrategy};
 use tauri_plugin_updater::UpdaterExt;
-
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-async fn check_update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
-  if let Some(update) = app.updater()?.check().await? {
-    let mut downloaded = 0;
-
-    info!("开始下载");
-    // alternatively we could also call update.download() and update.install() separately
-    update
-      .download_and_install(
-        |chunk_length, content_length| {
-          downloaded += chunk_length;
-          // info!("downloaded {downloaded} from {content_length:?}");
-        },
-        || {
-          info!("下载完成");
-        },
-      )
-      .await?;
-
-    info!("update installed");
-    app.restart();
-  } else {
-    info!("no update available");
-  }
-
-  Ok(())
-}
-
-#[tauri::command]
-fn get_version(app: AppHandle) -> String {
-  let v = app.package_info().version.clone();
-
-  let mut version = v.to_string();
-
-  dbg!(&version);
-
-  version
-}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -71,8 +32,6 @@ pub fn run() {
         .build(),
     )
     .invoke_handler(tauri::generate_handler![
-      check_update,
-      get_version,
       commands::openWin,
       commands::importSetting,
       commands::exportSetting,
@@ -92,8 +51,8 @@ pub fn run() {
       commands::updateQuickInputWindowSize,
       commands::hideQuickInputWindow,
       commands::get_package_info,
-      commands::checkUpdateRust,
-      commands::downloadAndInstall,
+      commands::checkUpdate,
+      commands::download_and_install,
       commands::saveCommands,
       commands::getCommands,
       commands::execCommand,
@@ -135,6 +94,8 @@ pub fn run() {
       app.handle().plugin(tauri_plugin_single_instance::init(
         |app: &AppHandle, args, cwd| {},
       ));
+
+      tray::create_tray();
 
       // 托盘
       {
