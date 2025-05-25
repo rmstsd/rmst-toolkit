@@ -2,7 +2,7 @@ mod commands;
 mod shortcut;
 mod tray;
 
-// mod updater;
+mod updater;
 
 use tauri::AppHandle;
 use tauri::Emitter; // 特质
@@ -55,31 +55,33 @@ pub fn run() {
       commands::getCommands,
       commands::execCommand,
     ])
-    .on_window_event(|window, evt| match evt {
-      WindowEvent::CloseRequested { api, .. } => match window.label() {
-        "setting" | "openFolder" | "quickInput" => {
-          api.prevent_close();
-          window.hide();
+    .on_window_event(|window, evt| {
+      match evt {
+        WindowEvent::CloseRequested { api, .. } => match window.label() {
+          "setting" | "openFolder" | "quickInput" => {
+            api.prevent_close();
+            window.hide();
+          }
+          _ => {}
+        },
+        WindowEvent::Focused(focused) => {
+          if window.label() == "openFolder" {
+            if !focused {
+              // let closure = || println!("异步任务");
+              // let hand = tokio::spawn(async move {
+              //   sleep(Duration::from_millis(1000)).await;
+              //   closure();
+              // });
+
+              // window.hide();
+            }
+          }
+
+          let app = window.app_handle();
+          app.emit_to("openFolder", "focusChanged", focused).unwrap();
         }
         _ => {}
-      },
-      WindowEvent::Focused(focused) => {
-        if window.label() == "openFolder" {
-          if !focused {
-            // let closure = || println!("异步任务");
-            // let hand = tokio::spawn(async move {
-            //   sleep(Duration::from_millis(1000)).await;
-            //   closure();
-            // });
-
-            // window.hide();
-          }
-        }
-
-        let app = window.app_handle();
-        app.emit_to("openFolder", "focusChanged", focused).unwrap();
-      }
-      _ => {}
+      };
     })
     .on_webview_event(|window, event| {
       dbg!(&event);

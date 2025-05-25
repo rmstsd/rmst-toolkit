@@ -57,6 +57,9 @@
         "languages": ["SimpChinese", "English"],
         "installerIcon": "icons/icon.ico"
       }
+    },
+    "resources": {
+      "icons2/*": "icons2/"
     }
   },
   "plugins": {

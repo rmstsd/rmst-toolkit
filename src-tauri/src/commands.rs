@@ -6,6 +6,7 @@ use enigo::{
 use log::info;
 // use port_killer::kill;
 use rand::random;
+use reqwest::Client;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::from_reader;
@@ -152,18 +153,6 @@ pub async fn clearStore(app: AppHandle) -> Result<(), String> {
   Ok(())
 }
 
-#[tauri::command]
-pub async fn page_loaded(
-  app: tauri::AppHandle,
-  window: tauri::Window,
-  title: String,
-  icon: String,
-) -> Result<(), String> {
-  window.set_title(title.as_str());
-
-  Ok(())
-}
-
 fn readFile(path: &str) -> io::Result<String> {
   let mut f = File::open(path)?;
   let mut buffer: String = String::new();
@@ -171,6 +160,41 @@ fn readFile(path: &str) -> io::Result<String> {
   f.read_to_string(&mut buffer)?;
 
   Ok(buffer)
+}
+
+#[tauri::command]
+pub async fn page_loaded(
+  app: tauri::AppHandle,
+  window: tauri::Window,
+  title: String,
+  icon: String,
+) -> Result<(), String> {
+  info!("Page loaded with title: {}, {}", title, icon);
+  window.set_title(title.as_str());
+
+  match download_icon(icon.as_str()).await {
+    Ok(image) => {
+      if let Err(e) = window.set_icon(image) {
+        eprintln!("Failed to set window icon: {}", e);
+      }
+    }
+    Err(e) => eprintln!("Failed to download icon: {}", e),
+  }
+
+  Ok(())
+}
+
+async fn download_icon(url: &str) -> Result<Image, Box<dyn std::error::Error>> {
+  // 使用Tauri的HTTP客户端下载图片
+  let response = Client::new().get(url).send().await?;
+
+  // 获取图片字节数据
+  let bytes = response.bytes().await?.to_vec();
+
+  // 从字节创建Image对象
+  let image = Image::from_bytes(&bytes)?;
+
+  Ok(image)
 }
 
 #[tauri::command(async)]
@@ -187,12 +211,8 @@ pub fn openWin(app: AppHandle, url: String) {
       .build()
       .expect("webview_window create error 啊");
 
-  ww.set_icon(Image::from_path("icons2/tray-icon.ico").unwrap());
-
   let data = readFile("icons2/ww-script.js").unwrap_or_default();
-  if (!data.is_empty()) {
-    dbg!(&"ww eval");
-
+  if !data.is_empty() {
     ww.eval(data.as_str());
   }
 
@@ -201,10 +221,10 @@ pub fn openWin(app: AppHandle, url: String) {
 
   let mut list = from_value::<Vec<String>>(listVal).unwrap();
 
-  if (!list.contains(&url)) {
+  if !list.contains(&url) {
     list.insert(0, url);
 
-    if (list.len() > 5) {
+    if list.len() > 5 {
       list.pop();
     }
 
