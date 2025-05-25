@@ -1,16 +1,14 @@
 mod commands;
+mod shortcut;
 mod tray;
 
-use log::info;
-use tauri::AppHandle;
+// mod updater;
 
+use tauri::AppHandle;
 use tauri::Emitter; // 特质
 use tauri::Manager; // 特质
-
 use tauri::WindowEvent;
-use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_log::{Target, TargetKind, TimezoneStrategy};
-use tauri_plugin_updater::UpdaterExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -66,8 +64,8 @@ pub fn run() {
         _ => {}
       },
       WindowEvent::Focused(focused) => {
-        if (window.label() == "openFolder") {
-          if (!focused) {
+        if window.label() == "openFolder" {
+          if !focused {
             // let closure = || println!("异步任务");
             // let hand = tokio::spawn(async move {
             //   sleep(Duration::from_millis(1000)).await;
@@ -95,139 +93,8 @@ pub fn run() {
         |app: &AppHandle, args, cwd| {},
       ));
 
-      tray::create_tray();
-
-      // 托盘
-      {
-        //
-        use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
-        use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-        let m2 = MenuItem::with_id(app, "setting", "设置", true, None::<&str>)?;
-        let restart = MenuItem::with_id(app, "restart", "重启", true, None::<&str>)?;
-        let quit_i = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
-        let separator = &PredefinedMenuItem::separator(app).unwrap();
-        let menu = Menu::with_items(app, &[&m2, separator, &restart, &quit_i])?;
-        let tray = TrayIconBuilder::new()
-          .menu(&menu)
-          .show_menu_on_left_click(false)
-          .icon(app.default_window_icon().unwrap().clone())
-          .on_menu_event(|app, event| match event.id.as_ref() {
-            "setting" => {
-              let settingWindow: tauri::WebviewWindow = app.get_webview_window("setting").unwrap();
-
-              if settingWindow.is_minimized().unwrap_or(false) {
-                settingWindow.unminimize();
-              }
-
-              settingWindow.show();
-              settingWindow.set_focus();
-            }
-            "quit" => {
-              app.exit(0);
-            }
-            "restart" => {
-              app.restart();
-            }
-            _ => {
-              println!("未匹配 {:?}", event.id)
-            }
-          })
-          .on_tray_icon_event(|tray, evt| match evt {
-            TrayIconEvent::Click {
-              position,
-              rect,
-              button: MouseButton::Right,
-              button_state: MouseButtonState::Up,
-              ..
-            } => {
-              dbg!(&position);
-            }
-            _ => {}
-          })
-          .build(app)?;
-      }
-
-      // 快捷键
-      {
-        use tauri_plugin_global_shortcut::{
-          Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState,
-        };
-
-        let alt_space_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::Space);
-        let alt_v_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyV);
-        let alt_r_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyR);
-
-        app.handle().plugin(
-          tauri_plugin_global_shortcut::Builder::new()
-            .with_handler(move |_app: &AppHandle, shortcut, event| {
-              if shortcut == &alt_space_shortcut {
-                match event.state() {
-                  ShortcutState::Pressed => {
-                    let openFolderWindows = _app.get_webview_window("openFolder").unwrap();
-
-                    let isVisible = openFolderWindows.is_visible().unwrap_or_default();
-                    if isVisible {
-                      if openFolderWindows.is_focused().expect("is_focused msg") {
-                        openFolderWindows.hide();
-                      } else {
-                        openFolderWindows.set_focus();
-                      }
-                    } else {
-                      openFolderWindows.show();
-                      openFolderWindows.set_focus();
-                    }
-                  }
-                  ShortcutState::Released => {
-                    // println!("Ctrl-N Released!");
-                  }
-                }
-              }
-              if shortcut == &alt_v_shortcut {
-                match event.state() {
-                  ShortcutState::Pressed => {
-                    let ww = _app.get_webview_window("quickInput").unwrap();
-
-                    if ww.is_visible().unwrap_or(false) {
-                      ww.hide();
-                    } else {
-                      let pos = ww.cursor_position().unwrap();
-                      ww.set_position(pos);
-                      ww.show();
-                      ww.set_focus();
-                    }
-                  }
-                  ShortcutState::Released => {
-                    // println!("Ctrl-N Released!");
-                  }
-                }
-              }
-              if shortcut == &alt_r_shortcut {
-                dbg!(&"alt + r");
-                match event.state() {
-                  ShortcutState::Pressed => {
-                    let ww = _app.get_webview_window("setting").unwrap();
-                    ww.unminimize();
-                    ww.show();
-                    ww.set_focus();
-
-                    let clipboard_text = _app.clipboard().read_text().unwrap_or_default();
-                    let text = clipboard_text.trim().to_string();
-
-                    _app.emit_to("setting", "showQrCode", text);
-                  }
-                  ShortcutState::Released => {
-                    // println!("Ctrl-N Released!");
-                  }
-                }
-              }
-            })
-            .build(),
-        )?;
-
-        app.global_shortcut().register(alt_space_shortcut);
-        app.global_shortcut().register(alt_v_shortcut);
-        app.global_shortcut().register(alt_r_shortcut);
-      }
+      tray::create_tray(app);
+      shortcut::create_shortcut(app);
 
       Ok(())
     })
