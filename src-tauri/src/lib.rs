@@ -1,9 +1,11 @@
 mod commands;
 mod shortcut;
+mod store;
 mod tray;
 
 mod updater;
 
+use store::initStore;
 use tauri::AppHandle;
 use tauri::Emitter; // 特质
 use tauri::Manager; // 特质
@@ -90,6 +92,8 @@ pub fn run() {
       dbg!(&payload.event());
     })
     .setup(|app| {
+      initStore(app);
+
       #[cfg(desktop)]
       app.handle().plugin(tauri_plugin_single_instance::init(
         |app: &AppHandle, args, cwd| {},

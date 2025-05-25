@@ -39,7 +39,7 @@ use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_store::StoreExt;
 // use urlencoding::encode;
 
-static Store_Key: &str = "store.json";
+pub static Store_Key: &str = "store.json";
 
 static Setting_Key: &str = "setting";
 static HistoryOpenedUrls_Key: &str = "historyOpenedUrls";
