@@ -3,6 +3,8 @@ use tauri::{Emitter, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
+use crate::constant::{WIN_LABEL_OPEN_FOLDER, WIN_LABEL_QUICK_INPUT, WIN_LABEL_SETTING};
+
 pub fn create_shortcut(app: &mut App) {
   let alt_space_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::Space);
   let alt_v_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyV);
@@ -14,7 +16,7 @@ pub fn create_shortcut(app: &mut App) {
         if shortcut == &alt_space_shortcut {
           match event.state() {
             ShortcutState::Pressed => {
-              let open_folder_window = _app.get_webview_window("openFolder").unwrap();
+              let open_folder_window = _app.get_webview_window(WIN_LABEL_OPEN_FOLDER).unwrap();
 
               let is_visible = open_folder_window.is_visible().unwrap_or_default();
               if is_visible {
@@ -36,7 +38,7 @@ pub fn create_shortcut(app: &mut App) {
         if shortcut == &alt_v_shortcut {
           match event.state() {
             ShortcutState::Pressed => {
-              let ww = _app.get_webview_window("quickInput").unwrap();
+              let ww = _app.get_webview_window(WIN_LABEL_QUICK_INPUT).unwrap();
 
               if ww.is_visible().unwrap_or(false) {
                 ww.hide().unwrap();
@@ -56,7 +58,7 @@ pub fn create_shortcut(app: &mut App) {
           dbg!(&"alt + r");
           match event.state() {
             ShortcutState::Pressed => {
-              let ww = _app.get_webview_window("setting").unwrap();
+              let ww = _app.get_webview_window(WIN_LABEL_SETTING).unwrap();
               ww.unminimize().unwrap();
               ww.show().unwrap();
               ww.set_focus().unwrap();
@@ -64,7 +66,7 @@ pub fn create_shortcut(app: &mut App) {
               let clipboard_text = _app.clipboard().read_text().unwrap_or_default();
               let text = clipboard_text.trim().to_string();
 
-              _app.emit_to("setting", "showQrCode", text).unwrap();
+              _app.emit_to(WIN_LABEL_SETTING, "showQrCode", text).unwrap();
             }
             ShortcutState::Released => {
               // println!("Ctrl-N Released!");

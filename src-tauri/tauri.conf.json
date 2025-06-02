@@ -59,7 +59,7 @@
       }
     },
     "resources": {
-      "icons2/*": "icons2/"
+      "resources/*": "resources/"
     }
   },
   "plugins": {

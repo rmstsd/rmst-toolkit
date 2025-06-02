@@ -11,14 +11,14 @@ export default function SettingPage() {
 
   useEffect(() => {
     const appWebview = getCurrentWebviewWindow()
-    // const un = appWebview.listen<string>('showQrCode', ({ payload }) => {
-    //   setActiveKey('3')
-    //   setQrCodeValue(payload ?? '')
-    // })
+    const un = appWebview.listen<string>('showQrCode', ({ payload }) => {
+      setActiveKey('3')
+      setQrCodeValue(payload ?? '')
+    })
 
-    // return () => {
-    //   un.then(cb => cb())
-    // }
+    return () => {
+      un.then(cb => cb())
+    }
   }, [])
 
   return (

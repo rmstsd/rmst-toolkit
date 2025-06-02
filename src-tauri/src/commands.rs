@@ -15,8 +15,6 @@ use serde_json::json;
 use serde_json::to_string;
 use serde_json::to_value;
 use serde_json::Value;
-use std::fs::metadata;
-use std::fs::read_dir;
 use std::fs::File;
 use std::io;
 use std::io::BufReader;
@@ -24,7 +22,8 @@ use std::io::Read;
 use std::path::Path;
 use std::vec;
 use std::{fs, path::PathBuf};
-use tauri::image;
+use std::{fs::metadata, sync::Arc};
+use std::{fs::read_dir, sync::Mutex};
 use tauri::image::Image;
 use tauri::webview::PageLoadEvent;
 use tauri::AppHandle;
@@ -34,12 +33,11 @@ use tauri::Manager;
 use tauri::Size;
 use tauri::WebviewWindow;
 use tauri::Wry;
+use tauri::{image, EventLoopMessage};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_dialog::DialogExt;
-use tauri_plugin_store::StoreExt;
+use tauri_plugin_store::{Store, StoreExt};
 // use urlencoding::encode;
-
-pub static Store_Key: &str = "store.json";
 
 static Setting_Key: &str = "setting";
 static HistoryOpenedUrls_Key: &str = "historyOpenedUrls";
@@ -104,7 +102,8 @@ pub fn exportSetting(app: AppHandle) {
   println!("{file_path:#?}");
   dbg!(file_path.to_string());
 
-  let store = app.store(Store_Key).unwrap();
+  let appData = app.state::<AppData>();
+  let store = &appData.store;
   let ans = store.get(Setting_Key);
 
   dbg!(&ans);
@@ -116,7 +115,8 @@ pub fn exportSetting(app: AppHandle) {
 
 #[tauri::command]
 pub fn saveSetting(app: AppHandle, settingData: SettingData) {
-  let store = app.store(Store_Key).unwrap();
+  let appData = app.state::<AppData>();
+  let store = &appData.store;
 
   dbg!("saveSetting", &settingData);
 
@@ -136,8 +136,8 @@ pub fn saveSetting(app: AppHandle, settingData: SettingData) {
 
 #[tauri::command]
 pub fn getSetting(app: AppHandle) -> Value {
-  let store = app.store(Store_Key).unwrap();
-  let val = store.get(Setting_Key);
+  let appData = app.state::<AppData>();
+  let val = appData.store.get(Setting_Key);
 
   match val {
     Some(val) => val,
@@ -147,7 +147,9 @@ pub fn getSetting(app: AppHandle) -> Value {
 
 #[tauri::command]
 pub async fn clearStore(app: AppHandle) -> Result<(), String> {
-  let store = app.store(Store_Key).unwrap();
+  let appData = app.state::<AppData>();
+
+  let store = &appData.store;
   store.delete(Setting_Key);
 
   Ok(())
@@ -211,12 +213,13 @@ pub fn openWin(app: AppHandle, url: String) {
       .build()
       .expect("webview_window create error 啊");
 
-  let data = readFile("icons2/ww-script.js").unwrap_or_default();
+  let data = readFile("resources/ww-script.js").unwrap_or_default();
   if !data.is_empty() {
     ww.eval(data.as_str());
   }
 
-  let store = app.store(Store_Key).unwrap();
+  let appData = app.state::<AppData>();
+  let store = &appData.store;
   let listVal = store.get(HistoryOpenedUrls_Key).unwrap_or(json!([]));
 
   let mut list = from_value::<Vec<String>>(listVal).unwrap();
@@ -234,7 +237,8 @@ pub fn openWin(app: AppHandle, url: String) {
 
 #[tauri::command]
 pub fn getHistoryOpenedUrls(app: AppHandle) -> Value {
-  let store = app.store(Store_Key).unwrap();
+  let appData = app.state::<AppData>();
+  let store = &appData.store;
   let val = store.get(HistoryOpenedUrls_Key);
 
   match val {
@@ -249,7 +253,8 @@ pub fn getHistoryOpenedUrls(app: AppHandle) -> Value {
 
 #[tauri::command]
 pub async fn clearHistoryOpenedUrls(app: AppHandle) -> Result<(), String> {
-  let store = app.store(Store_Key).unwrap();
+  let appData = app.state::<AppData>();
+  let store = &appData.store;
   store.delete(HistoryOpenedUrls_Key);
   Ok(())
 }
@@ -551,6 +556,8 @@ pub async fn checkUpdate(app: tauri::AppHandle) -> tauri_plugin_updater::Result<
 
 use tauri::{ipc::Channel, State};
 
+use crate::store::AppData;
+
 #[derive(Clone, Serialize)]
 #[serde(tag = "event", content = "data")]
 pub enum DownloadEvent {
@@ -638,7 +645,8 @@ pub async fn saveCommands(
   app: tauri::AppHandle,
   commands: Option<Vec<CommandItem>>,
 ) -> Result<(), String> {
-  let store = app.store(Store_Key).unwrap();
+  let appData = app.state::<AppData>();
+  let store = &appData.store;
 
   let value = to_value(commands).unwrap_or(json!([]));
 
@@ -648,7 +656,8 @@ pub async fn saveCommands(
 
 #[tauri::command]
 pub async fn getCommands(app: tauri::AppHandle) -> Result<Vec<CommandItem>, String> {
-  let store = app.store(Store_Key).unwrap();
+  let appData = app.state::<AppData>();
+  let store = &appData.store;
 
   let value = store.get(Commands_Key).unwrap_or(json!([]));
 
@@ -659,7 +668,8 @@ pub async fn getCommands(app: tauri::AppHandle) -> Result<Vec<CommandItem>, Stri
 
 #[tauri::command]
 pub async fn execCommand(app: tauri::AppHandle, label: String) -> Result<(), String> {
-  let store = app.store(Store_Key).unwrap();
+  let appData = app.state::<AppData>();
+  let store = &appData.store;
 
   let value = store.get(Commands_Key).unwrap_or(json!([]));
 

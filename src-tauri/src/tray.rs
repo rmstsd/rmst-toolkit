@@ -1,7 +1,9 @@
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::App;
-use tauri::Manager; // 特质
+use tauri::Manager;
+
+use crate::constant::WIN_LABEL_SETTING;
 
 pub fn create_tray(app: &mut App) {
   let m2 = MenuItem::with_id(app, "setting", "设置", true, None::<&str>).unwrap();
@@ -16,7 +18,7 @@ pub fn create_tray(app: &mut App) {
     .icon(app.default_window_icon().unwrap().clone())
     .on_menu_event(|app, event| match event.id.as_ref() {
       "setting" => {
-        let setting_window = app.get_webview_window("setting");
+        let setting_window = app.get_webview_window(WIN_LABEL_SETTING);
 
         if let Some(ww) = setting_window {
           if ww.is_minimized().unwrap_or(false) {

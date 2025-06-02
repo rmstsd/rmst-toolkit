@@ -1,15 +1,17 @@
+use std::sync::Arc;
+use std::{mem::MaybeUninit, sync::Mutex};
+use tauri::Manager;
+use tauri::{App, Wry};
 use tauri_plugin_store::{Store, StoreExt};
 
-use std::{mem::MaybeUninit, sync::Mutex};
-
-use tauri::App;
-
-// Example with serde_json::Value as the value type:
-// pub static mut globalStore: MaybeUninit<Store<String>> = MaybeUninit::uninit();
-
 static Store_Key: &str = "store.json";
+
+pub struct AppData {
+  pub store: Arc<Store<Wry>>,
+}
+
 pub fn initStore(app: &mut App) {
-  unsafe {
-    // globalStore = app.store(Store_Key).unwrap();
-  }
+  app.manage(AppData {
+    store: app.store(Store_Key).unwrap(),
+  });
 }

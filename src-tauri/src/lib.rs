@@ -1,10 +1,14 @@
+#![allow(warnings)]
+
 mod commands;
+mod constant;
 mod shortcut;
 mod store;
 mod tray;
 
 mod updater;
 
+use constant::WIN_LABEL_OPEN_FOLDER;
 use store::initStore;
 use tauri::AppHandle;
 use tauri::Emitter; // 特质
@@ -60,14 +64,16 @@ pub fn run() {
     .on_window_event(|window, evt| {
       match evt {
         WindowEvent::CloseRequested { api, .. } => match window.label() {
-          "setting" | "openFolder" | "quickInput" => {
+          constant::WIN_LABEL_OPEN_FOLDER
+          | constant::WIN_LABEL_SETTING
+          | constant::WIN_LABEL_QUICK_INPUT => {
             api.prevent_close();
             window.hide();
           }
           _ => {}
         },
         WindowEvent::Focused(focused) => {
-          if window.label() == "openFolder" {
+          if window.label() == WIN_LABEL_OPEN_FOLDER {
             if !focused {
               // let closure = || println!("异步任务");
               // let hand = tokio::spawn(async move {
@@ -80,7 +86,9 @@ pub fn run() {
           }
 
           let app = window.app_handle();
-          app.emit_to("openFolder", "focusChanged", focused).unwrap();
+          app
+            .emit_to(WIN_LABEL_OPEN_FOLDER, "focusChanged", focused)
+            .unwrap();
         }
         _ => {}
       };
