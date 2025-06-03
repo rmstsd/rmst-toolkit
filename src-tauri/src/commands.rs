@@ -9,12 +9,12 @@ use rand::random;
 use reqwest::Client;
 use serde::Deserialize;
 use serde::Serialize;
-use serde_json::from_reader;
 use serde_json::from_value;
 use serde_json::json;
 use serde_json::to_string;
 use serde_json::to_value;
 use serde_json::Value;
+use serde_json::{from_reader, to_writer_pretty};
 use std::fs::File;
 use std::io;
 use std::io::BufReader;
@@ -104,13 +104,13 @@ pub fn exportSetting(app: AppHandle) {
 
   let appData = app.state::<AppData>();
   let store = &appData.store;
-  let ans = store.get(Setting_Key);
+  let ans = store.get(Setting_Key).unwrap_or(json!({}));
 
-  dbg!(&ans);
+  // let st = to_string(&ans.unwrap_or(json!({})));
+  let writer = File::create(file_path.to_string()).unwrap();
+  to_writer_pretty(writer, &ans);
 
-  let st = to_string(&ans.unwrap_or(json!({})));
-
-  fs::write(file_path.to_string(), st.unwrap_or_default()).expect("Unable to read file");
+  // fs::write(file_path.to_string(), st.unwrap_or_default()).expect("Unable to read file");
 }
 
 #[tauri::command]

@@ -16,28 +16,30 @@ pub fn create_tray(app: &mut App) {
     .menu(&menu)
     .show_menu_on_left_click(false)
     .icon(app.default_window_icon().unwrap().clone())
-    .on_menu_event(|app, event| match event.id.as_ref() {
-      "setting" => {
-        let setting_window = app.get_webview_window(WIN_LABEL_SETTING);
+    .on_menu_event(|app, event| {
+      match event.id.as_ref() {
+        "setting" => {
+          let setting_window = app.get_webview_window(WIN_LABEL_SETTING);
 
-        if let Some(ww) = setting_window {
-          if ww.is_minimized().unwrap_or(false) {
-            let _ = ww.unminimize();
+          if let Some(ww) = setting_window {
+            if ww.is_minimized().unwrap_or(false) {
+              let _ = ww.unminimize();
+            }
+
+            let _ = ww.show();
+            let _ = ww.set_focus();
           }
-
-          let _ = ww.show();
-          let _ = ww.set_focus();
         }
-      }
-      "quit" => {
-        app.exit(0);
-      }
-      "restart" => {
-        app.restart();
-      }
-      _ => {
-        println!("未匹配 {:?}", event.id)
-      }
+        "quit" => {
+          app.exit(0);
+        }
+        "restart" => {
+          app.restart();
+        }
+        _ => {
+          println!("未匹配 {:?}", event.id)
+        }
+      };
     })
     .on_tray_icon_event(|tray, evt| {
       match evt {
