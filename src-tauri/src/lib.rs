@@ -1,20 +1,21 @@
 #![allow(warnings)]
 
 mod commands;
-mod constant;
 mod shortcut;
 mod store;
 mod tray;
+mod utils;
+mod window;
 
 mod updater;
 
-use constant::WIN_LABEL_OPEN_FOLDER;
 use store::initStore;
 use tauri::AppHandle;
 use tauri::Emitter; // 特质
 use tauri::Manager; // 特质
 use tauri::WindowEvent;
 use tauri_plugin_log::{Target, TargetKind, TimezoneStrategy};
+use window::WIN_LABEL_OPEN_FOLDER;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -64,9 +65,9 @@ pub fn run() {
     .on_window_event(|window, evt| {
       match evt {
         WindowEvent::CloseRequested { api, .. } => match window.label() {
-          constant::WIN_LABEL_OPEN_FOLDER
-          | constant::WIN_LABEL_SETTING
-          | constant::WIN_LABEL_QUICK_INPUT => {
+          window::WIN_LABEL_OPEN_FOLDER
+          | window::WIN_LABEL_SETTING
+          | window::WIN_LABEL_QUICK_INPUT => {
             api.prevent_close();
             window.hide();
           }
@@ -102,7 +103,7 @@ pub fn run() {
     .setup(|app| {
       initStore(app);
 
-      constant::create_window(app);
+      window::create_window(app);
 
       #[cfg(desktop)]
       app.handle().plugin(tauri_plugin_single_instance::init(

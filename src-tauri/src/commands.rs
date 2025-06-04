@@ -155,15 +155,6 @@ pub async fn clearStore(app: AppHandle) -> Result<(), String> {
   Ok(())
 }
 
-fn readFile(path: &str) -> io::Result<String> {
-  let mut f = File::open(path)?;
-  let mut buffer: String = String::new();
-
-  f.read_to_string(&mut buffer)?;
-
-  Ok(buffer)
-}
-
 #[tauri::command]
 pub async fn page_loaded(
   app: tauri::AppHandle,
@@ -556,7 +547,7 @@ pub async fn checkUpdate(app: tauri::AppHandle) -> tauri_plugin_updater::Result<
 
 use tauri::{ipc::Channel, State};
 
-use crate::store::AppData;
+use crate::{store::AppData, utils::readFile};
 
 #[derive(Clone, Serialize)]
 #[serde(tag = "event", content = "data")]
@@ -604,33 +595,6 @@ pub async fn download_and_install(app: AppHandle, on_event: Channel<DownloadEven
     }
   }
 }
-
-// async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
-//   if let Some(update) = app.updater()?.check().await? {
-//     let mut downloaded = 0;
-
-//     info!("rust -> 下载并安装");
-//     // alternatively we could also call update.download() and update.install() separately
-//     update
-//       .download_and_install(
-//         |chunk_length, content_length| {
-//           downloaded += chunk_length;
-//           println!("downloaded {downloaded} from {content_length:?}");
-//         },
-//         || {
-//           println!("download finished");
-//           info!("rust -> download finished");
-//         },
-//       )
-//       .await?;
-
-//     println!("update installed");
-//     info!("rust -> update installed");
-//     app.restart();
-//   }
-
-//   Ok(())
-// }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CommandItem {
@@ -730,28 +694,3 @@ fn execCommandItem(commandItem: CommandItem) -> Result<(), String> {
     }
   }
 }
-
-// #[tauri::command]
-// pub async fn check_update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
-//   if let Some(update) = app.updater()?.check().await? {
-//     let mut downloaded = 0;
-
-//     // alternatively we could also call update.download() and update.install() separately
-//     update
-//       .download_and_install(
-//         |chunk_length, content_length| {
-//           downloaded += chunk_length;
-//           println!("downloaded {downloaded} from {content_length:?}");
-//         },
-//         || {
-//           println!("download finished");
-//         },
-//       )
-//       .await?;
-
-//     println!("update installed");
-//     app.restart();
-//   }
-
-//   Ok(())
-// }

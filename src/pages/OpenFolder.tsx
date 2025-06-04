@@ -25,7 +25,7 @@ export const useTauriFocus = () => {
       } else {
         timer = setTimeout(() => {
           appWindow.hide()
-        }, 100)
+        }, 10)
       }
     }
 

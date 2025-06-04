@@ -3,7 +3,7 @@ use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}
 use tauri::App;
 use tauri::Manager;
 
-use crate::constant::WIN_LABEL_SETTING;
+use crate::window::WIN_LABEL_SETTING;
 
 pub fn create_tray(app: &mut App) {
   let m2 = MenuItem::with_id(app, "setting", "设置", true, None::<&str>).unwrap();

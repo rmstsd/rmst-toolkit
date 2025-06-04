@@ -17,21 +17,23 @@ pub fn create_window(app: &mut App) {
   .visible(false)
   .center()
   .build()
-  .expect("webview_window create error 啊");
+  .expect("#setting webview_window create 错误");
 
-  WebviewWindowBuilder::new(
-    app,
-    WIN_LABEL_OPEN_FOLDER,
-    WebviewUrl::App("index.html/#openFolder".into()),
-  )
-  .visible(false)
-  .resizable(false)
-  .always_on_top(true)
-  .decorations(false)
-  .skip_taskbar(true)
-  .center()
-  .build()
-  .expect("webview_window create error 啊");
+  {
+    let ww = WebviewWindowBuilder::new(
+      app,
+      WIN_LABEL_OPEN_FOLDER,
+      WebviewUrl::App("index.html/#openFolder".into()),
+    )
+    .visible(false)
+    .resizable(false)
+    .always_on_top(true)
+    .decorations(false)
+    .skip_taskbar(true)
+    .center()
+    .build()
+    .expect("#openFolder webview_window create error 错误");
+  }
 
   WebviewWindowBuilder::new(
     app,
@@ -48,5 +50,5 @@ pub fn create_window(app: &mut App) {
   .decorations(false)
   .resizable(false)
   .build()
-  .expect("webview_window create error 啊");
+  .expect("#quickInput webview_window create error 错误");
 }
