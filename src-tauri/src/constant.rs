@@ -26,6 +26,7 @@ pub fn create_window(app: &mut App) {
   )
   .visible(false)
   .resizable(false)
+  .always_on_top(true)
   .decorations(false)
   .skip_taskbar(true)
   .center()
@@ -45,6 +46,7 @@ pub fn create_window(app: &mut App) {
   .minimizable(false)
   .always_on_top(true)
   .decorations(false)
+  .resizable(false)
   .build()
   .expect("webview_window create error 啊");
 }

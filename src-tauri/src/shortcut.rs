@@ -1,4 +1,5 @@
-use tauri::{App, AppHandle};
+use tauri::utils::config::Position;
+use tauri::{App, AppHandle, LogicalPosition, PhysicalPosition};
 use tauri::{Emitter, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
@@ -18,16 +19,27 @@ pub fn create_shortcut(app: &mut App) {
             ShortcutState::Pressed => {
               let open_folder_window = _app.get_webview_window(WIN_LABEL_OPEN_FOLDER).unwrap();
 
+              let setPos = || {
+                let mainMonitor = open_folder_window.primary_monitor().unwrap().unwrap();
+                let ww = mainMonitor.size().width;
+                let wwWidth = open_folder_window.outer_size().unwrap().width;
+
+                let x: u32 = ww / 2 - wwWidth / 2;
+                let pos = open_folder_window.outer_position().unwrap();
+                open_folder_window.set_position(PhysicalPosition { x, y: pos.y as u32 });
+              };
               let is_visible = open_folder_window.is_visible().unwrap_or_default();
               if is_visible {
                 if open_folder_window.is_focused().expect("is_focused msg") {
                   open_folder_window.hide().unwrap();
                 } else {
                   open_folder_window.set_focus().unwrap();
+                  setPos();
                 }
               } else {
                 open_folder_window.show().unwrap();
                 open_folder_window.set_focus().unwrap();
+                setPos();
               }
             }
             ShortcutState::Released => {
