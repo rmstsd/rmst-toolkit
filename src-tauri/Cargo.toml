@@ -41,3 +41,5 @@ tauri-plugin-clipboard-manager = "2.2.2"
 tauri-plugin-store = "2"
 tauri-plugin-dialog = "2.2.2"
 tauri-plugin-os = "2"
+
+image = "0.25"

@@ -97,7 +97,13 @@ export default function Setting() {
 
         <Form.Item label=" " className="sticky top-0 z-10 mt-2 bg-white border-b pb-2 pt-2">
           <div className="flex flex-wrap items-center gap-3">
-            <h2>设置</h2>
+            <h2
+              onClick={() => {
+                // invoke('setIcon')
+              }}
+            >
+              设置
+            </h2>
             <Button type="primary" onClick={saveHandler}>
               保存
             </Button>

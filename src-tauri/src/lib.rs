@@ -61,6 +61,7 @@ pub fn run() {
       commands::saveCommands,
       commands::getCommands,
       commands::execCommand,
+      commands::setIcon
     ])
     .on_window_event(|window, evt| {
       match evt {

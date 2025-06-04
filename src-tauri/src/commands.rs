@@ -547,7 +547,7 @@ pub async fn checkUpdate(app: tauri::AppHandle) -> tauri_plugin_updater::Result<
 
 use tauri::{ipc::Channel, State};
 
-use crate::{store::AppData, utils::readFile};
+use crate::{store::AppData, utils::readFile, window};
 
 #[derive(Clone, Serialize)]
 #[serde(tag = "event", content = "data")]
@@ -693,4 +693,35 @@ fn execCommandItem(commandItem: CommandItem) -> Result<(), String> {
       Err("启动进程失败：".to_string())
     }
   }
+}
+
+use ::image::{ImageFormat, ImageReader};
+use std::io::Cursor;
+#[tauri::command]
+pub async fn setIcon(app: tauri::AppHandle) {
+  dbg!(&"set icon start");
+  let ww: WebviewWindow = app.get_webview_window(window::WIN_LABEL_SETTING).unwrap();
+
+  // 从字节创建Image对象
+  // let image = Image::from_path("resources/g.png");
+
+  let img = ImageReader::open("resources/test.png")
+    .unwrap()
+    .decode()
+    .unwrap();
+
+  let mut bytes: Vec<u8> = Vec::new();
+  img
+    .write_to(&mut Cursor::new(&mut bytes), ImageFormat::Png)
+    .unwrap();
+
+  ww.set_icon(Image::from_bytes(&bytes).unwrap()).unwrap();
+
+  dbg!(&"set icon end");
+  // match image {
+  //   Ok(image) => ww.set_icon(image).unwrap(),
+  //   Err(err) => {
+  //     dbg!(&err);
+  //   }
+  // }
 }
