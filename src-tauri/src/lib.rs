@@ -102,6 +102,8 @@ pub fn run() {
     .setup(|app| {
       initStore(app);
 
+      constant::create_window(app);
+
       #[cfg(desktop)]
       app.handle().plugin(tauri_plugin_single_instance::init(
         |app: &AppHandle, args, cwd| {},
