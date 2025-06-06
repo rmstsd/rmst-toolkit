@@ -49,10 +49,11 @@ pub fn create_tray(app: &mut App) {
           button_state: MouseButtonState::Up,
           ..
         } => {
-          // let ww = app
-          //   .handle()
-          //   .get_webview_window(window::WIN_LABEL_Tray_Menu)
-          //   .unwrap();
+          let ww = tray
+            .app_handle()
+            .clone()
+            .get_webview_window(window::WIN_LABEL_Tray_Menu)
+            .unwrap();
           // ww.show();
           // ww.set_focus();
         }
