@@ -3,7 +3,7 @@ use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}
 use tauri::App;
 use tauri::Manager;
 
-use crate::window::WIN_LABEL_SETTING;
+use crate::window::{self, WIN_LABEL_SETTING};
 
 pub fn create_tray(app: &mut App) {
   let m2 = MenuItem::with_id(app, "setting", "设置", true, None::<&str>).unwrap();
@@ -49,7 +49,12 @@ pub fn create_tray(app: &mut App) {
           button_state: MouseButtonState::Up,
           ..
         } => {
-          dbg!(&position);
+          // let ww = app
+          //   .handle()
+          //   .get_webview_window(window::WIN_LABEL_Tray_Menu)
+          //   .unwrap();
+          // ww.show();
+          // ww.set_focus();
         }
         _ => {}
       };

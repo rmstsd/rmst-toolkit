@@ -3,6 +3,7 @@ import Setting from './pages/Setting'
 import QuickInput from './pages/QuickInput'
 import { useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
+import TrayMenu from './pages/TrayMenu'
 
 function App() {
   const hash = location.hash.slice(1)
@@ -20,6 +21,7 @@ function App() {
       {hash === 'openFolder' && <OpenFolder />}
       {hash === 'setting' && <Setting />}
       {hash === 'quickInput' && <QuickInput />}
+      {hash === 'trayMenu' && <TrayMenu />}
     </>
   )
 }

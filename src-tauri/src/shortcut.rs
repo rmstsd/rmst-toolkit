@@ -21,12 +21,13 @@ pub fn create_shortcut(app: &mut App) {
 
               let setPos = || {
                 let mainMonitor = ww.primary_monitor().unwrap().unwrap();
-                let monitorWidth = mainMonitor.size().width;
+                let monitorSize = mainMonitor.size();
                 let wwWidth = ww.outer_size().unwrap().width;
 
-                let x: u32 = monitorWidth / 2 - wwWidth / 2;
+                let x: u32 = monitorSize.width / 2 - wwWidth / 2;
+                let y: u32 = monitorSize.height / 4;
                 let pos = ww.outer_position().unwrap();
-                ww.set_position(PhysicalPosition { x, y: pos.y as u32 });
+                ww.set_position(PhysicalPosition { x, y });
               };
 
               let is_visible = ww.is_visible().unwrap_or_default();

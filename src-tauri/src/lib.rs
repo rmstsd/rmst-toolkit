@@ -68,7 +68,8 @@ pub fn run() {
         WindowEvent::CloseRequested { api, .. } => match window.label() {
           window::WIN_LABEL_OPEN_FOLDER
           | window::WIN_LABEL_SETTING
-          | window::WIN_LABEL_QUICK_INPUT => {
+          | window::WIN_LABEL_QUICK_INPUT
+          | window::WIN_LABEL_Tray_Menu => {
             api.prevent_close();
             window.hide();
           }

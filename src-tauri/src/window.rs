@@ -3,6 +3,7 @@ use tauri::{App, AppHandle, WebviewUrl, WebviewWindowBuilder};
 pub const WIN_LABEL_SETTING: &str = "setting";
 pub const WIN_LABEL_OPEN_FOLDER: &str = "openFolder";
 pub const WIN_LABEL_QUICK_INPUT: &str = "quickInput";
+pub const WIN_LABEL_Tray_Menu: &str = "trayMenu";
 
 pub fn create_window(app: &mut App) {
   let app = app.handle();
@@ -51,4 +52,20 @@ pub fn create_window(app: &mut App) {
   .resizable(false)
   .build()
   .expect("#quickInput webview_window create error 错误");
+
+  WebviewWindowBuilder::new(
+    app,
+    WIN_LABEL_Tray_Menu,
+    WebviewUrl::App("index.html/#trayMenu".into()),
+  )
+  .skip_taskbar(false)
+  .visible(false)
+  .inner_size(400.0, 200.0)
+  .maximizable(false)
+  .minimizable(false)
+  .always_on_top(true)
+  .decorations(false)
+  .resizable(false)
+  .build()
+  .expect("#trayMenu webview_window create error 错误");
 }
