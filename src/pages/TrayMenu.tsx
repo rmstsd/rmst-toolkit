@@ -10,7 +10,7 @@ export default function TrayMenu() {
 
     const un = appWindow.onFocusChanged(({ payload: focused }) => {
       if (!focused) {
-        // appWindow.hide()
+        appWindow.hide()
       }
     })
 
