@@ -58,7 +58,7 @@ pub fn create_window(app: &mut App) {
     WIN_LABEL_Tray_Menu,
     WebviewUrl::App("index.html/#trayMenu".into()),
   )
-  .skip_taskbar(false)
+  .skip_taskbar(true)
   .visible(false)
   .inner_size(400.0, 200.0)
   .maximizable(false)

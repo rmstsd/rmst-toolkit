@@ -24,7 +24,6 @@ use std::vec;
 use std::{fs, path::PathBuf};
 use std::{fs::metadata, sync::Arc};
 use std::{fs::read_dir, sync::Mutex};
-use tauri::image::Image;
 use tauri::webview::PageLoadEvent;
 use tauri::AppHandle;
 use tauri::Listener;
@@ -34,6 +33,7 @@ use tauri::Size;
 use tauri::WebviewWindow;
 use tauri::Wry;
 use tauri::{image, EventLoopMessage};
+use tauri::{image::Image, PhysicalSize};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_store::{Store, StoreExt};
@@ -724,4 +724,44 @@ pub async fn setIcon(app: tauri::AppHandle) {
   //     dbg!(&err);
   //   }
   // }
+}
+
+#[tauri::command]
+pub fn trayMenu(app: tauri::AppHandle, menuKey: &str) {
+  dbg!(&menuKey);
+
+  let tm_window = app.get_webview_window(window::WIN_LABEL_Tray_Menu).unwrap();
+  tm_window.hide();
+
+  match menuKey {
+    "setting" => {
+      let setting_window = app.get_webview_window(window::WIN_LABEL_SETTING);
+
+      if let Some(ww) = setting_window {
+        if ww.is_minimized().unwrap_or(false) {
+          let _ = ww.unminimize();
+        }
+
+        let _ = ww.show();
+        let _ = ww.set_focus();
+      }
+    }
+    "restart" => {
+      app.restart();
+    }
+    "quit" => {
+      app.exit(0);
+    }
+    _ => {
+      dbg!(&"未匹配的 menuKey");
+    }
+  }
+}
+
+#[tauri::command]
+pub fn setWindowSize(app: tauri::AppHandle, label: &str, width: u32, height: u32) {
+  dbg!(label, width, height);
+
+  let ww: WebviewWindow = app.get_webview_window(label).unwrap();
+  ww.set_size(LogicalSize { width, height }).unwrap();
 }

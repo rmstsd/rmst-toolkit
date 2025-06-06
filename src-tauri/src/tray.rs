@@ -1,7 +1,8 @@
+use std::f64;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::App;
 use tauri::Manager;
+use tauri::{App, PhysicalPosition};
 
 use crate::window::{self, WIN_LABEL_SETTING};
 
@@ -13,7 +14,7 @@ pub fn create_tray(app: &mut App) {
   let menu = Menu::with_items(app, &[&m2, separator, &restart, &quit_i]).unwrap();
 
   let _ = TrayIconBuilder::new()
-    .menu(&menu)
+    // .menu(&menu)
     .show_menu_on_left_click(false)
     .icon(app.default_window_icon().unwrap().clone())
     .on_menu_event(|app, event| {
@@ -54,8 +55,14 @@ pub fn create_tray(app: &mut App) {
             .clone()
             .get_webview_window(window::WIN_LABEL_Tray_Menu)
             .unwrap();
-          // ww.show();
-          // ww.set_focus();
+          ww.show();
+          ww.set_focus();
+
+          let size = ww.outer_size().unwrap();
+          ww.set_position(PhysicalPosition {
+            x: position.x,
+            y: position.y - f64::from(size.height),
+          });
         }
         _ => {}
       };
