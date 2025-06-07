@@ -26,7 +26,7 @@ export default function TrayMenu() {
         invoke('setWindowSize', { label: 'trayMenu', width: size.width, height: size.height })
       }}
     >
-      <div style={{ width: 100 }}>
+      <div style={{ width: 100 }} className="tray-menu ">
         <Menu
           selectable={false}
           onClickMenuItem={key => {

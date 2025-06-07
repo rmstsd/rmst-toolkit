@@ -66,6 +66,8 @@ pub fn create_window(app: &mut App) {
   .always_on_top(true)
   .decorations(false)
   .resizable(false)
+  .transparent(true)
+  .shadow(false)
   .build()
   .expect("#trayMenu webview_window create error 错误");
 }
