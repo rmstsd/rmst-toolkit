@@ -10,16 +10,23 @@ mod window;
 mod updater;
 
 use store::initStore;
+use tauri::is_dev;
 use tauri::AppHandle;
 use tauri::Emitter; // 特质
 use tauri::Manager; // 特质
 use tauri::WindowEvent;
+use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_log::{Target, TargetKind, TimezoneStrategy};
 use window::WIN_LABEL_OPEN_FOLDER;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
+    .plugin(tauri_plugin_autostart::init(
+      MacosLauncher::LaunchAgent,
+      Some(vec!["--flag1", "--flag2"]), /* arbitrary number of args to pass to your app */
+    ))
     .plugin(tauri_plugin_process::init())
     .plugin(tauri_plugin_updater::Builder::new().build())
     .plugin(tauri_plugin_clipboard_manager::init())
@@ -108,6 +115,19 @@ pub fn run() {
       initStore(app);
 
       window::create_window(app);
+
+      let idDev = is_dev();
+      if !idDev {
+        let autostart_manager = app.autolaunch();
+        let _ = autostart_manager.enable();
+        // 检查 enable 状态
+        // println!(
+        //   "registered for autostart? {}",
+        //   autostart_manager.is_enabled().unwrap()
+        // );
+        // // 禁用 autostart
+        // let _ = autostart_manager.disable();
+      }
 
       #[cfg(desktop)]
       app.handle().plugin(tauri_plugin_single_instance::init(
