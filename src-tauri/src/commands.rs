@@ -9,12 +9,12 @@ use rand::random;
 use reqwest::Client;
 use serde::Deserialize;
 use serde::Serialize;
-use serde_json::from_value;
 use serde_json::json;
 use serde_json::to_string;
 use serde_json::to_value;
 use serde_json::Value;
 use serde_json::{from_reader, to_writer_pretty};
+use serde_json::{from_value, to_string_pretty};
 use std::fs::File;
 use std::io;
 use std::io::BufReader;
@@ -665,14 +665,13 @@ fn execCommandItem(commandItem: CommandItem) -> Result<(), String> {
   let target_dir = PathBuf::from(commandItem.currentDir);
 
   // 构建命令：node sc.js
+  let cmdName = commandItem.cmd.clone();
   let mut cmd = Command::new(commandItem.cmd);
+  cmd.current_dir(target_dir); // 设置工作目录
   let args: Vec<&str> = commandItem.arg.split_whitespace().collect();
-
   for arg in args {
     cmd.arg(arg);
   }
-
-  cmd.current_dir(target_dir); // 设置工作目录
 
   // 执行命令并处理输出
   match cmd.status() {
@@ -682,15 +681,26 @@ fn execCommandItem(commandItem: CommandItem) -> Result<(), String> {
 
         Ok(())
       } else {
-        let str = format!("命令执行失败，退出码：{}", status.code().unwrap_or(-1));
-        dbg!(&str);
+        let output: Result<std::process::Output, io::Error> = cmd.output();
+        if let Ok(op) = output {
+          let err = String::from_utf8(op.stderr).unwrap_or_default();
+          info!("{}", err);
+          return Err(err);
+        } else {
+          let str = format!("命令执行失败，退出码：{}", status);
+          info!("{}", str);
 
-        Err(str)
+          return Err(str);
+        }
       }
     }
     Err(e) => {
       eprintln!("启动进程失败：{}", e);
-      Err("启动进程失败：".to_string())
+
+      let error_msg = format!("Cmd execute command '{} {}", cmdName, e);
+      info!("{}", error_msg);
+
+      Err(error_msg)
     }
   }
 }

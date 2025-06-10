@@ -48,8 +48,8 @@ export default function ExecCommand() {
         .then(() => {
           Message.success('执行成功')
         })
-        .catch(() => {
-          Message.error('执行失败')
+        .catch(error => {
+          Message.error(`执行失败: ${error}`)
         })
         .finally(() => {
           setLoading(false)
