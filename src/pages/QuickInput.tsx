@@ -1,12 +1,15 @@
 import { Button } from '@arco-design/web-react'
 import { invoke } from '@tauri-apps/api/core'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ResizeObserver from 'rc-resize-observer'
 import { SettingData } from '../type'
 import clsx from 'clsx'
+import { useFocus } from '../utils'
 
 export default function QuickInput() {
   const [notes, setNotes] = useState([])
+
+  const sizeRef = useRef({ width: 0, height: 0 })
 
   useEffect(() => {
     invoke('getSetting').then((data: SettingData) => {
@@ -14,9 +17,20 @@ export default function QuickInput() {
     })
   }, [])
 
+  useFocus(({ appWindow, focused }) => {
+    updateSize()
+  })
+
+  const updateSize = () => {
+    invoke('updateQuickInputWindowSize', { size: sizeRef.current })
+  }
+
   return (
     <ResizeObserver
-      onResize={size => invoke('updateQuickInputWindowSize', { size: { width: size.width, height: size.height } })}
+      onResize={size => {
+        sizeRef.current = { width: size.width, height: size.height }
+        updateSize()
+      }}
     >
       <div className="quick-input p-[6px] w-[200px]">
         <div data-tauri-drag-region className="h-[22px] bg-orange-400 flex mb-[5px]">

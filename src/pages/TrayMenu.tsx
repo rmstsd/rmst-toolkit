@@ -1,23 +1,14 @@
 import { Menu } from '@arco-design/web-react'
 import { invoke } from '@tauri-apps/api/core'
-import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import ResizeObserver from 'rc-resize-observer'
-import { useEffect } from 'react'
+import { useFocus } from '../utils'
 
 export default function TrayMenu() {
-  useEffect(() => {
-    const appWindow = getCurrentWebviewWindow()
-
-    const un = appWindow.onFocusChanged(({ payload: focused }) => {
-      if (!focused) {
-        appWindow.hide()
-      }
-    })
-
-    return () => {
-      un.then(un => un())
+  useFocus(({ appWindow, focused }) => {
+    if (!focused) {
+      appWindow.hide()
     }
-  }, [])
+  })
 
   return (
     <ResizeObserver

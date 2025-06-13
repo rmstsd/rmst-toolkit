@@ -14,7 +14,7 @@ interface Props {
   onBlur?: () => void
 }
 
-export const useTauriFocus = () => {
+const useTauriFocus = () => {
   useEffect(() => {
     let timer
     const appWindow = getCurrentWebviewWindow()
