@@ -75,4 +75,20 @@ pub fn create_window(app: &mut App) {
   ww.shadow(false)
     .build()
     .expect("#trayMenu webview_window create error 错误");
+
+  let machine_kind = if cfg!(unix) {
+    "unix"
+  } else if cfg!(windows) {
+    "windows"
+  } else {
+    "unknown"
+  };
+
+  println!("I'm running on a {} machine!", machine_kind);
+
+  if cfg!(target_os = "macos") {
+    println!("macos");
+  } else {
+    println!("other os");
+  }
 }
