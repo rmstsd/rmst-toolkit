@@ -1,4 +1,4 @@
-use tauri::{App, AppHandle, WebviewUrl, WebviewWindowBuilder};
+use tauri::{window::Color, App, AppHandle, WebviewUrl, WebviewWindowBuilder};
 
 pub const WIN_LABEL_SETTING: &str = "setting";
 pub const WIN_LABEL_OPEN_FOLDER: &str = "openFolder";
@@ -53,7 +53,7 @@ pub fn create_window(app: &mut App) {
   .build()
   .expect("#quickInput webview_window create error 错误");
 
-  WebviewWindowBuilder::new(
+  let mut ww = WebviewWindowBuilder::new(
     app,
     WIN_LABEL_Tray_Menu,
     WebviewUrl::App("index.html/#trayMenu".into()),
@@ -65,9 +65,14 @@ pub fn create_window(app: &mut App) {
   .minimizable(false)
   .always_on_top(true)
   .decorations(false)
-  .resizable(false)
-  .transparent(true)
-  .shadow(false)
-  .build()
-  .expect("#trayMenu webview_window create error 错误");
+  .resizable(false);
+
+  #[cfg(target_os = "windows")]
+  {
+    ww = ww.transparent(true);
+  }
+
+  ww.shadow(false)
+    .build()
+    .expect("#trayMenu webview_window create error 错误");
 }
