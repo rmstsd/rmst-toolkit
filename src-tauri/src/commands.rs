@@ -39,78 +39,79 @@ use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_store::{Store, StoreExt};
 // use urlencoding::encode;
 
+use crate::window::{WIN_LABEL_OPEN_FOLDER, WIN_LABEL_QUICK_INPUT, WIN_LABEL_SETTING};
+
 static Setting_Key: &str = "setting";
 static HistoryOpenedUrls_Key: &str = "historyOpenedUrls";
 
 static Commands_Key: &str = "commands";
 
 #[tauri::command]
-pub fn importSetting(app: AppHandle) {
+pub fn importSetting(app: AppHandle) -> Result<(), ()> {
   dbg!(&7785);
-  let file_path = app.dialog().file().blocking_pick_file();
 
-  match file_path {
-    Some(path) => {
-      let path: String = path.to_string();
+  let file_path = app
+    .dialog()
+    .file()
+    .add_filter("", &["json"])
+    .blocking_pick_file();
 
-      println!("{path:#?}");
+  if let Some(path) = file_path {
+    let path: String = path.to_string();
 
-      // let content = fs::read_to_string(path).expect("Unable to read file");
-      // let data: SettingData = serde_json::from_str(content.as_str()).unwrap();
-      // dbg!(&data);
+    println!("{path:#?}");
 
-      let opened = fs::File::open(path);
+    // let content = fs::read_to_string(path).expect("Unable to read file");
+    // let data: SettingData = serde_json::from_str(content.as_str()).unwrap();
+    // dbg!(&data);
 
-      match opened {
-        Ok(val) => {
-          // json 里的 数据和 结构体不一致会导致 error
-          let data: Result<SettingData, serde_json::Error> = serde_json::from_reader(val);
+    let opened = fs::File::open(path);
 
-          match data {
-            Ok(val) => {
-              dbg!(&val);
-              saveSetting(app, val);
-            }
-            Err(err) => {
-              dbg!(&err);
-            }
-          }
-        }
-        Err(err) => {
-          dbg!(&err);
-        }
+    if let Ok(val) = opened {
+      // json 里的 数据和 结构体不一致会导致 error
+      let data: Result<SettingData, serde_json::Error> = serde_json::from_reader(val);
+
+      if let Ok(data) = data {
+        dbg!(&data);
+        saveSetting(app, data);
+
+        return Ok(());
       }
-
-      // let content: SettingData = serde_json::from_reader(fs::File::open(path).unwrap()).unwrap();
-      // saveSetting(app, content);
     }
-    None => {}
+
+    // let content: SettingData = serde_json::from_reader(fs::File::open(path).unwrap()).unwrap();
+    // saveSetting(app, content);
   }
+
+  return Err(());
 }
 
 #[tauri::command]
-pub fn exportSetting(app: AppHandle) {
+pub fn exportSetting(app: AppHandle) -> Result<(), ()> {
   dbg!("exportSetting");
   let file_path = app
     .dialog()
     .file()
     .set_file_name("cfg-2.json")
-    .add_filter("My Filter", &["json"])
-    .blocking_save_file()
-    .unwrap();
+    .add_filter("", &["json"])
+    .blocking_save_file();
 
-  println!("{file_path:#?}");
-  dbg!(file_path.to_string());
+  if let Some(file_path) = file_path {
+    println!("{file_path:#?}");
+    dbg!(file_path.to_string());
 
-  let appData = app.state::<AppData>();
-  let store = &appData.store;
-  let ans = store.get(Setting_Key).unwrap_or(json!({}));
+    let appData = app.state::<AppData>();
+    let store = &appData.store;
+    let ans = store.get(Setting_Key).unwrap_or(json!({}));
 
-  // let st = to_string(&ans.unwrap_or(json!({})));
-  let writer = File::create(file_path.to_string()).unwrap();
-  to_writer_pretty(writer, &ans);
+    // let st = to_string(&ans.unwrap_or(json!({})));
+    let writer = File::create(file_path.to_string()).unwrap();
+    to_writer_pretty(writer, &ans);
 
-  // fs::write(file_path.to_string(), st.unwrap_or_default()).expect("Unable to read file");
+    return Ok(());
+  }
+
+  return Err(());
 }
 
 #[tauri::command]
@@ -411,7 +412,7 @@ pub async fn openFolderEditor(
 #[tauri::command]
 pub async fn hideDirWindow(app: tauri::AppHandle, window: tauri::Window) -> Result<(), String> {
   let win = app
-    .get_webview_window("openFolder")
+    .get_webview_window(WIN_LABEL_OPEN_FOLDER)
     .expect("经济技术电饭锅");
   win.hide();
   Ok(())
@@ -420,7 +421,7 @@ pub async fn hideDirWindow(app: tauri::AppHandle, window: tauri::Window) -> Resu
 #[tauri::command]
 pub async fn setDirWindowSize(app: tauri::AppHandle, height: f64) -> Result<(), String> {
   let win = app
-    .get_webview_window("openFolder")
+    .get_webview_window(WIN_LABEL_OPEN_FOLDER)
     .expect("对方过后发过火");
 
   win.set_size(Size::Logical(LogicalSize {
@@ -440,7 +441,7 @@ pub async fn hideWindow(window: tauri::Window) -> Result<(), String> {
 pub async fn CopyAndPaste(app: AppHandle, content: &str) -> Result<(), String> {
   app.clipboard().write_text(content).unwrap();
 
-  let ww = app.get_webview_window("quickInput").unwrap();
+  let ww = app.get_webview_window(WIN_LABEL_QUICK_INPUT).unwrap();
   ww.hide();
 
   use std::{thread, time};
@@ -460,7 +461,7 @@ pub async fn updateQuickInputWindowSize(
   app: AppHandle,
   size: LogicalSize<f64>,
 ) -> Result<(), String> {
-  let ww = app.get_webview_window("quickInput").unwrap();
+  let ww = app.get_webview_window(WIN_LABEL_QUICK_INPUT).unwrap();
 
   ww.set_size(Size::Logical(LogicalSize {
     width: size.width,
@@ -472,7 +473,7 @@ pub async fn updateQuickInputWindowSize(
 
 #[tauri::command]
 pub async fn hideQuickInputWindow(app: AppHandle) -> Result<(), String> {
-  let ww = app.get_webview_window("quickInput").unwrap();
+  let ww = app.get_webview_window(WIN_LABEL_QUICK_INPUT).unwrap();
 
   ww.hide();
   Ok(())
