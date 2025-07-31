@@ -97,7 +97,7 @@ const OpenFolder = () => {
       if (evt.key === 'Enter') {
         if (searchUrl) {
           // openExternal(searchUrl)
-          // hideDirWindow()
+
           return
         }
 
@@ -131,7 +131,7 @@ const OpenFolder = () => {
       return
     }
 
-    invoke('hideDirWindow')
+    invoke('hideWindow')
 
     if (ctrlKey) {
       // openWithTerminal(projectPath)
@@ -148,9 +148,7 @@ const OpenFolder = () => {
   const { tipInfo, searchUrl } = (() => {
     const [shortcutWd] = wd?.split(' ') || []
     const defaultList = []
-    const matchItem = defaultList.find(item =>
-      item.shortcutWd.map(o => o.toLowerCase()).includes(shortcutWd.toLowerCase())
-    )
+    const matchItem = defaultList.find(item => item.shortcutWd.map(o => o.toLowerCase()).includes(shortcutWd.toLowerCase()))
 
     // 如果目的是搜索
     if (matchItem && wd.at(shortcutWd.length) === ' ') {
@@ -166,7 +164,7 @@ const OpenFolder = () => {
   return (
     <ResizeObserver
       onResize={size => {
-        invoke('setDirWindowSize', { height: size.height })
+        invoke('setWindowSize', { height: size.height })
       }}
     >
       <div className="open-dir">
@@ -187,7 +185,6 @@ const OpenFolder = () => {
               <Radio.Group
                 value={activeEditorIndex}
                 onChange={value => {
-                  // hideDirWindow()
                   // openWithVscode(flatDirNames[selectIndex], editorPaths[value].path)
                 }}
                 type="button"

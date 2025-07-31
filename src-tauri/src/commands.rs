@@ -1,255 +1,29 @@
 use enigo::{
-  Button, Coordinate,
   Direction::{Click, Press, Release},
-  Enigo, Key, Keyboard, Mouse, Settings,
+  Enigo, Key, Keyboard, Settings,
 };
 use log::info;
-// use port_killer::kill;
-use rand::random;
-use reqwest::Client;
 use serde::Deserialize;
 use serde::Serialize;
+use serde_json::from_value;
 use serde_json::json;
-use serde_json::to_string;
 use serde_json::to_value;
 use serde_json::Value;
-use serde_json::{from_reader, to_writer_pretty};
-use serde_json::{from_value, to_string_pretty};
-use std::fs::File;
+use std::fs::metadata;
+use std::fs::read_dir;
 use std::io;
-use std::io::BufReader;
-use std::io::Read;
 use std::path::Path;
+use std::path::PathBuf;
 use std::vec;
-use std::{fs, path::PathBuf};
-use std::{fs::metadata, sync::Arc};
-use std::{fs::read_dir, sync::Mutex};
-use tauri::webview::PageLoadEvent;
 use tauri::AppHandle;
-use tauri::Listener;
-use tauri::LogicalSize;
 use tauri::Manager;
-use tauri::Size;
-use tauri::WebviewWindow;
-use tauri::Wry;
-use tauri::{image, EventLoopMessage};
-use tauri::{image::Image, PhysicalSize};
 use tauri_plugin_clipboard_manager::ClipboardExt;
-use tauri_plugin_dialog::DialogExt;
-use tauri_plugin_store::{Store, StoreExt};
-// use urlencoding::encode;
 
-use crate::window::{WIN_LABEL_OPEN_FOLDER, WIN_LABEL_QUICK_INPUT, WIN_LABEL_SETTING};
-
-static Setting_Key: &str = "setting";
-static HistoryOpenedUrls_Key: &str = "historyOpenedUrls";
-
-static Commands_Key: &str = "commands";
-
-#[tauri::command]
-pub fn importSetting(app: AppHandle) -> Result<(), ()> {
-  dbg!(&7785);
-
-  let file_path = app
-    .dialog()
-    .file()
-    .add_filter("", &["json"])
-    .blocking_pick_file();
-
-  if let Some(path) = file_path {
-    let path: String = path.to_string();
-
-    println!("{path:#?}");
-
-    // let content = fs::read_to_string(path).expect("Unable to read file");
-    // let data: SettingData = serde_json::from_str(content.as_str()).unwrap();
-    // dbg!(&data);
-
-    let opened = fs::File::open(path);
-
-    if let Ok(val) = opened {
-      // json 里的 数据和 结构体不一致会导致 error
-      let data: Result<SettingData, serde_json::Error> = serde_json::from_reader(val);
-
-      if let Ok(data) = data {
-        dbg!(&data);
-        saveSetting(app, data);
-
-        return Ok(());
-      }
-    }
-
-    // let content: SettingData = serde_json::from_reader(fs::File::open(path).unwrap()).unwrap();
-    // saveSetting(app, content);
-  }
-
-  return Err(());
-}
-
-#[tauri::command]
-pub fn exportSetting(app: AppHandle) -> Result<(), ()> {
-  dbg!("exportSetting");
-  let file_path = app
-    .dialog()
-    .file()
-    .set_file_name("cfg-2.json")
-    .add_filter("", &["json"])
-    .blocking_save_file();
-
-  if let Some(file_path) = file_path {
-    println!("{file_path:#?}");
-    dbg!(file_path.to_string());
-
-    let appData = app.state::<AppData>();
-    let store = &appData.store;
-    let ans = store.get(Setting_Key).unwrap_or(json!({}));
-
-    // let st = to_string(&ans.unwrap_or(json!({})));
-    let writer = File::create(file_path.to_string()).unwrap();
-    to_writer_pretty(writer, &ans);
-
-    return Ok(());
-  }
-
-  return Err(());
-}
-
-#[tauri::command]
-pub fn saveSetting(app: AppHandle, settingData: SettingData) {
-  let appData = app.state::<AppData>();
-  let store = &appData.store;
-
-  dbg!("saveSetting", &settingData);
-
-  let val = to_value(settingData);
-
-  match val {
-    Ok(value) => {
-      dbg!(&value);
-
-      store.set(Setting_Key, value);
-    }
-    Err(err) => {
-      dbg!(&err);
-    }
-  }
-}
-
-#[tauri::command]
-pub fn getSetting(app: AppHandle) -> Value {
-  let appData = app.state::<AppData>();
-  let val = appData.store.get(Setting_Key);
-
-  match val {
-    Some(val) => val,
-    None => Value::Null,
-  }
-}
-
-#[tauri::command]
-pub async fn clearStore(app: AppHandle) -> Result<(), String> {
-  let appData = app.state::<AppData>();
-
-  let store = &appData.store;
-  store.delete(Setting_Key);
-
-  Ok(())
-}
-
-#[tauri::command]
-pub async fn page_loaded(
-  app: tauri::AppHandle,
-  window: tauri::Window,
-  title: String,
-  icon: String,
-) -> Result<(), String> {
-  info!("Page loaded with title: {}, {}", title, icon);
-  window.set_title(title.as_str());
-
-  match download_icon(icon.as_str()).await {
-    Ok(image) => {
-      if let Err(e) = window.set_icon(image) {
-        eprintln!("Failed to set window icon: {}", e);
-      }
-    }
-    Err(e) => eprintln!("Failed to download icon: {}", e),
-  }
-
-  Ok(())
-}
-
-async fn download_icon(url: &str) -> Result<Image, Box<dyn std::error::Error>> {
-  // 使用Tauri的HTTP客户端下载图片
-  let response = Client::new().get(url).send().await?;
-
-  // 获取图片字节数据
-  let bytes = response.bytes().await?.to_vec();
-
-  // 从字节创建Image对象
-  let image = Image::from_bytes(&bytes)?;
-
-  Ok(image)
-}
-
-#[tauri::command(async)]
-pub fn openWin(app: AppHandle, url: String) {
-  dbg!(&url);
-
-  let label: i32 = random();
-  let label = label.to_string();
-
-  let ww: WebviewWindow =
-    tauri::WebviewWindowBuilder::new(&app, label, tauri::WebviewUrl::App(url.clone().into()))
-      .title("rmst-tools")
-      .inner_size(1200.0, 800.0)
-      .build()
-      .expect("webview_window create error 啊");
-
-  let data = readFile("resources/ww-script.js").unwrap_or_default();
-  if !data.is_empty() {
-    ww.eval(data.as_str());
-  }
-
-  let appData = app.state::<AppData>();
-  let store = &appData.store;
-  let listVal = store.get(HistoryOpenedUrls_Key).unwrap_or(json!([]));
-
-  let mut list = from_value::<Vec<String>>(listVal).unwrap();
-
-  if !list.contains(&url) {
-    list.insert(0, url);
-
-    if list.len() > 5 {
-      list.pop();
-    }
-
-    store.set(HistoryOpenedUrls_Key, list);
-  }
-}
-
-#[tauri::command]
-pub fn getHistoryOpenedUrls(app: AppHandle) -> Value {
-  let appData = app.state::<AppData>();
-  let store = &appData.store;
-  let val = store.get(HistoryOpenedUrls_Key);
-
-  match val {
-    Some(val) => val,
-    None => {
-      let emp = serde_json::from_value(json!([])).unwrap();
-
-      emp
-    }
-  }
-}
-
-#[tauri::command]
-pub async fn clearHistoryOpenedUrls(app: AppHandle) -> Result<(), String> {
-  let appData = app.state::<AppData>();
-  let store = &appData.store;
-  store.delete(HistoryOpenedUrls_Key);
-  Ok(())
-}
+use crate::{
+  cmds::setting::getSetting,
+  store::AppData,
+  window::{self, WIN_LABEL_QUICK_INPUT},
+};
 
 #[tauri::command]
 pub fn killPort(port: u16) -> Result<bool, bool> {
@@ -409,33 +183,33 @@ pub async fn openFolderEditor(
   Ok(())
 }
 
-#[tauri::command]
-pub async fn hideDirWindow(app: tauri::AppHandle, window: tauri::Window) -> Result<(), String> {
-  let win = app
-    .get_webview_window(WIN_LABEL_OPEN_FOLDER)
-    .expect("经济技术电饭锅");
-  win.hide();
-  Ok(())
-}
+// #[tauri::command]
+// pub async fn setDirWindowSize(app: tauri::AppHandle, height: f64) -> Result<(), String> {
+//   let win = app
+//     .get_webview_window(WIN_LABEL_OPEN_FOLDER)
+//     .expect("对方过后发过火");
 
-#[tauri::command]
-pub async fn setDirWindowSize(app: tauri::AppHandle, height: f64) -> Result<(), String> {
-  let win = app
-    .get_webview_window(WIN_LABEL_OPEN_FOLDER)
-    .expect("对方过后发过火");
+//   win.set_size(Size::Logical(LogicalSize {
+//     width: 800.0,
+//     height,
+//   }));
+//   Ok(())
+// }
 
-  win.set_size(Size::Logical(LogicalSize {
-    width: 800.0,
-    height,
-  }));
-  Ok(())
-}
+// #[tauri::command]
+// pub async fn updateQuickInputWindowSize(
+//   app: AppHandle,
+//   size: LogicalSize<f64>,
+// ) -> Result<(), String> {
+//   let ww = app.get_webview_window(WIN_LABEL_QUICK_INPUT).unwrap();
 
-#[tauri::command]
-pub async fn hideWindow(window: tauri::Window) -> Result<(), String> {
-  window.hide();
-  Ok(())
-}
+//   ww.set_size(Size::Logical(LogicalSize {
+//     width: size.width,
+//     height: size.height,
+//   }));
+
+//   Ok(())
+// }
 
 #[tauri::command]
 pub async fn CopyAndPaste(app: AppHandle, content: &str) -> Result<(), String> {
@@ -456,147 +230,6 @@ pub async fn CopyAndPaste(app: AppHandle, content: &str) -> Result<(), String> {
   Ok(())
 }
 
-#[tauri::command]
-pub async fn updateQuickInputWindowSize(
-  app: AppHandle,
-  size: LogicalSize<f64>,
-) -> Result<(), String> {
-  let ww = app.get_webview_window(WIN_LABEL_QUICK_INPUT).unwrap();
-
-  ww.set_size(Size::Logical(LogicalSize {
-    width: size.width,
-    height: size.height,
-  }));
-
-  Ok(())
-}
-
-#[tauri::command]
-pub async fn hideQuickInputWindow(app: AppHandle) -> Result<(), String> {
-  let ww = app.get_webview_window(WIN_LABEL_QUICK_INPUT).unwrap();
-
-  ww.hide();
-  Ok(())
-}
-
-#[tauri::command]
-pub async fn get_package_info(app: AppHandle) -> Result<AppInfo, String> {
-  let pi = app.package_info();
-
-  dbg!(&pi);
-
-  let vvv = &pi.version;
-  let vec: Vec<String> = vec![&vvv.major, &vvv.minor, &vvv.patch]
-    .into_iter()
-    .map(|item| item.to_string())
-    .collect();
-  let version = vec.join(".");
-
-  let info = AppInfo {
-    name: pi.name.clone(),
-    version: version,
-    authors: pi.authors,
-    description: pi.description,
-    crate_name: pi.crate_name,
-  };
-
-  Ok(info)
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct AppInfo {
-  name: String,
-  version: String,
-  authors: &'static str,
-  description: &'static str,
-  crate_name: &'static str,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct UpdateInfo {
-  needUpdate: bool,
-  current_version: String,
-  version: String,
-}
-
-static mut updatePlay: Option<Update> = None;
-
-use tauri_plugin_updater::{Update, UpdaterExt};
-#[tauri::command]
-pub async fn checkUpdate(app: tauri::AppHandle) -> tauri_plugin_updater::Result<UpdateInfo> {
-  if let Some(update) = app.app_handle().updater()?.check().await? {
-    info!("有更新");
-    unsafe {
-      updatePlay = Some(update.clone());
-    };
-
-    let update_info = UpdateInfo {
-      needUpdate: true,
-      current_version: update.current_version,
-      version: update.version,
-    };
-    return Ok(update_info);
-  }
-  info!("没有更新");
-
-  Ok(UpdateInfo {
-    needUpdate: false,
-    current_version: "".to_string(),
-    version: "".to_string(),
-  })
-}
-
-use tauri::{ipc::Channel, State};
-
-use crate::{store::AppData, utils::readFile, window};
-
-#[derive(Clone, Serialize)]
-#[serde(tag = "event", content = "data")]
-pub enum DownloadEvent {
-  Started { content_length: Option<u64> },
-  Progress { chunk_length: usize },
-  Finished,
-}
-#[tauri::command]
-pub async fn download_and_install(app: AppHandle, on_event: Channel<DownloadEvent>) {
-  unsafe {
-    let mut started = false;
-
-    match updatePlay.as_ref() {
-      Some(update) => {
-        info!("开始下载 update");
-        // Use `update` as a reference here
-        // .download_and_install
-        update
-          .download_and_install(
-            |chunk_length, content_length| {
-              if !started {
-                on_event.send(DownloadEvent::Started { content_length });
-                started = true;
-              }
-
-              on_event.send(DownloadEvent::Progress { chunk_length });
-              // downloaded += chunk_length;
-              // println!("downloaded {downloaded} from {content_length:?}");
-            },
-            || {
-              println!("download finished");
-              info!("rust -> download finished");
-
-              on_event.send(DownloadEvent::Finished);
-            },
-          )
-          .await;
-
-        println!("update installed");
-        info!("rust -> update installed");
-        // app.restart();
-      }
-      None => {}
-    }
-  }
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CommandItem {
   label: String,
@@ -604,6 +237,8 @@ pub struct CommandItem {
   arg: String,        // index.js
   currentDir: String, // E:/rmst-sd
 }
+
+static Commands_Key: &str = "commands";
 
 #[tauri::command]
 pub async fn saveCommands(
@@ -706,37 +341,6 @@ fn execCommandItem(commandItem: CommandItem) -> Result<(), String> {
   }
 }
 
-use ::image::{ImageFormat, ImageReader};
-use std::io::Cursor;
-#[tauri::command]
-pub async fn setIcon(app: tauri::AppHandle) {
-  dbg!(&"set icon start");
-  let ww: WebviewWindow = app.get_webview_window(window::WIN_LABEL_SETTING).unwrap();
-
-  // 从字节创建Image对象
-  // let image = Image::from_path("resources/g.png");
-
-  let img = ImageReader::open("resources/test.png")
-    .unwrap()
-    .decode()
-    .unwrap();
-
-  let mut bytes: Vec<u8> = Vec::new();
-  img
-    .write_to(&mut Cursor::new(&mut bytes), ImageFormat::Png)
-    .unwrap();
-
-  ww.set_icon(Image::from_bytes(&bytes).unwrap()).unwrap();
-
-  dbg!(&"set icon end");
-  // match image {
-  //   Ok(image) => ww.set_icon(image).unwrap(),
-  //   Err(err) => {
-  //     dbg!(&err);
-  //   }
-  // }
-}
-
 #[tauri::command]
 pub fn trayMenu(app: tauri::AppHandle, menuKey: &str) {
   dbg!(&menuKey);
@@ -767,12 +371,4 @@ pub fn trayMenu(app: tauri::AppHandle, menuKey: &str) {
       dbg!(&"未匹配的 menuKey");
     }
   }
-}
-
-#[tauri::command]
-pub fn setWindowSize(app: tauri::AppHandle, label: &str, width: u32, height: u32) {
-  dbg!(label, width, height);
-
-  let ww: WebviewWindow = app.get_webview_window(label).unwrap();
-  ww.set_size(LogicalSize { width, height }).unwrap();
 }

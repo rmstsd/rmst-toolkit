@@ -1,5 +1,8 @@
-#![allow(warnings)]
+// #![allow(warnings)]
 
+#[allow(non_upper_case_globals)]
+//
+mod cmds;
 mod commands;
 mod shortcut;
 mod store;
@@ -7,9 +10,6 @@ mod tray;
 mod utils;
 mod window;
 
-mod updater;
-
-use store::initStore;
 use tauri::is_dev;
 use tauri::AppHandle;
 use tauri::Emitter; // 特质
@@ -18,6 +18,9 @@ use tauri::WindowEvent;
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_log::{Target, TargetKind, TimezoneStrategy};
+
+use crate::{cmds::common, cmds::open_win, cmds::setting, cmds::updater};
+use store::initStore;
 use window::WIN_LABEL_OPEN_FOLDER;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -44,33 +47,36 @@ pub fn run() {
         .build(),
     )
     .invoke_handler(tauri::generate_handler![
-      commands::openWin,
-      commands::importSetting,
-      commands::exportSetting,
-      commands::saveSetting,
-      commands::getSetting,
-      commands::clearStore,
-      commands::getHistoryOpenedUrls,
-      commands::clearHistoryOpenedUrls,
-      commands::killPort,
+      open_win::openWin,
+      open_win::page_loaded,
+      open_win::getHistoryOpenedUrls,
+      open_win::clearHistoryOpenedUrls,
+      //
+      common::hideWindow,
+      common::setWindowSize,
+      common::get_package_info,
+      //
+      setting::importSetting,
+      setting::exportSetting,
+      setting::saveSetting,
+      setting::getSetting,
+      setting::clearStore,
+      //
+      updater::checkUpdate,
+      updater::download_and_install,
+      //
       commands::getProjectNamesTree,
       commands::openFolderEditor,
-      commands::hideDirWindow,
-      commands::setDirWindowSize,
-      commands::page_loaded,
-      commands::hideWindow,
+      //
+      commands::killPort,
+      //
       commands::CopyAndPaste,
-      commands::updateQuickInputWindowSize,
-      commands::hideQuickInputWindow,
-      commands::get_package_info,
-      commands::checkUpdate,
-      commands::download_and_install,
+      //
       commands::saveCommands,
       commands::getCommands,
       commands::execCommand,
-      commands::setIcon,
+      //
       commands::trayMenu,
-      commands::setWindowSize
     ])
     .on_window_event(|window, evt| {
       match evt {

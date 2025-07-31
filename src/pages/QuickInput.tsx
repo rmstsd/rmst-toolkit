@@ -22,7 +22,7 @@ export default function QuickInput() {
   })
 
   const updateSize = () => {
-    invoke('updateQuickInputWindowSize', { size: sizeRef.current })
+    invoke('setWindowSize', { size: sizeRef.current })
   }
 
   return (
@@ -34,7 +34,7 @@ export default function QuickInput() {
     >
       <div className="quick-input p-[6px] w-[200px]">
         <div data-tauri-drag-region className="h-[22px] bg-orange-400 flex mb-[5px]">
-          <Button size="mini" className={clsx('win-not-drag h-full')} onClick={() => invoke('hideQuickInputWindow')}>
+          <Button size="mini" className={clsx('win-not-drag h-full')} onClick={() => invoke('hideWindow')}>
             x
           </Button>
         </div>

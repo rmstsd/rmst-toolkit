@@ -1,19 +1,7 @@
 import { SettingData } from '../../type'
 import { Channel, invoke } from '@tauri-apps/api/core'
 // import { info as logInfo, error as logError } from '@tauri-apps/plugin-log'
-import {
-  Button,
-  Divider,
-  Form,
-  Input,
-  Link,
-  Message,
-  Modal,
-  Progress,
-  Switch,
-  Tag,
-  Typography
-} from '@arco-design/web-react'
+import { Button, Divider, Form, Input, Link, Message, Modal, Progress, Switch, Tag, Typography } from '@arco-design/web-react'
 import { IconDelete } from '@arco-design/web-react/icon'
 import { useEffect, useState } from 'react'
 import Updater from './Updater'
@@ -97,13 +85,7 @@ export default function Setting() {
 
         <Form.Item label=" " className="sticky top-0 z-10 mt-2 bg-white border-b pb-2 pt-2">
           <div className="flex flex-wrap items-center gap-3">
-            <h2
-              onClick={() => {
-                // invoke('setIcon')
-              }}
-            >
-              设置
-            </h2>
+            <h2 onClick={() => {}}>设置</h2>
             <Button type="primary" onClick={saveHandler}>
               保存
             </Button>

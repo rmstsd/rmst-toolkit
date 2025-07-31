@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use std::{mem::MaybeUninit, sync::Mutex};
 use tauri::Manager;
 use tauri::{App, Wry};
 use tauri_plugin_store::{Store, StoreExt};

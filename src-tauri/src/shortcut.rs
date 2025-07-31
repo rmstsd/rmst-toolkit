@@ -1,5 +1,4 @@
-use tauri::utils::config::Position;
-use tauri::{App, AppHandle, LogicalPosition, PhysicalPosition};
+use tauri::{App, AppHandle, PhysicalPosition};
 use tauri::{Emitter, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
