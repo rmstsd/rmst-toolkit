@@ -62,9 +62,7 @@ fn kill_process_by_port(port: u16) -> Result<(), std::io::Error> {
         let pid_str = parts[4];
         if let Ok(pid) = pid_str.parse::<u32>() {
           // 杀死找到的进程
-          Command::new("taskkill")
-            .args(&["/F", "/PID", &pid.to_string()])
-            .output()?;
+          Command::new("taskkill").args(&["/F", "/PID", &pid.to_string()]).output()?;
         }
       }
     }
@@ -72,34 +70,24 @@ fn kill_process_by_port(port: u16) -> Result<(), std::io::Error> {
   #[cfg(target_os = "linux")]
   {
     // 在 Linux 上查找占用指定端口的进程 ID
-    let output = Command::new("sh")
-      .arg("-c")
-      .arg(&format!("lsof -t -i:{}", port))
-      .output()?;
+    let output = Command::new("sh").arg("-c").arg(&format!("lsof -t -i:{}", port)).output()?;
     let output_str = String::from_utf8_lossy(&output.stdout);
     for line in output_str.lines() {
       if let Ok(pid) = line.parse::<u32>() {
         // 杀死找到的进程
-        Command::new("kill")
-          .args(&["-9", &pid.to_string()])
-          .output()?;
+        Command::new("kill").args(&["-9", &pid.to_string()]).output()?;
       }
     }
   }
   #[cfg(target_os = "macos")]
   {
     // 在 macOS 上查找占用指定端口的进程 ID
-    let output = Command::new("sh")
-      .arg("-c")
-      .arg(&format!("lsof -t -i:{}", port))
-      .output()?;
+    let output = Command::new("sh").arg("-c").arg(&format!("lsof -t -i:{}", port)).output()?;
     let output_str = String::from_utf8_lossy(&output.stdout);
     for line in output_str.lines() {
       if let Ok(pid) = line.parse::<u32>() {
         // 杀死找到的进程
-        Command::new("kill")
-          .args(&["-9", &pid.to_string()])
-          .output()?;
+        Command::new("kill").args(&["-9", &pid.to_string()]).output()?;
       }
     }
   }
@@ -139,10 +127,7 @@ pub fn getProjectNamesTree(app: AppHandle) -> Value {
         .expect("msg")
         .into_iter()
         .map(|item| item.unwrap().file_name().to_string_lossy().to_string())
-        .filter(|item| {
-          !blackList.contains(&item.as_str())
-            && !blackStartWithChar.iter().any(|char| item.starts_with(char))
-        })
+        .filter(|item| !blackList.contains(&item.as_str()) && !blackStartWithChar.iter().any(|char| item.starts_with(char)))
         .collect();
 
       let nt = NamesTree { name, children };
@@ -161,11 +146,7 @@ struct NamesTree {
 }
 
 #[tauri::command]
-pub async fn openFolderEditor(
-  app: tauri::AppHandle,
-  projectPath: String,
-  editorPath: String,
-) -> Result<(), String> {
+pub async fn openFolderEditor(app: tauri::AppHandle, projectPath: String, editorPath: String) -> Result<(), String> {
   dbg!(&projectPath);
   dbg!(&editorPath);
 
@@ -183,40 +164,12 @@ pub async fn openFolderEditor(
   Ok(())
 }
 
-// #[tauri::command]
-// pub async fn setDirWindowSize(app: tauri::AppHandle, height: f64) -> Result<(), String> {
-//   let win = app
-//     .get_webview_window(WIN_LABEL_OPEN_FOLDER)
-//     .expect("对方过后发过火");
-
-//   win.set_size(Size::Logical(LogicalSize {
-//     width: 800.0,
-//     height,
-//   }));
-//   Ok(())
-// }
-
-// #[tauri::command]
-// pub async fn updateQuickInputWindowSize(
-//   app: AppHandle,
-//   size: LogicalSize<f64>,
-// ) -> Result<(), String> {
-//   let ww = app.get_webview_window(WIN_LABEL_QUICK_INPUT).unwrap();
-
-//   ww.set_size(Size::Logical(LogicalSize {
-//     width: size.width,
-//     height: size.height,
-//   }));
-
-//   Ok(())
-// }
-
 #[tauri::command]
-pub async fn CopyAndPaste(app: AppHandle, content: &str) -> Result<(), String> {
+pub async fn CopyAndPaste(app: AppHandle, content: &str) -> Result<(), tauri::Error> {
   app.clipboard().write_text(content).unwrap();
 
   let ww = app.get_webview_window(WIN_LABEL_QUICK_INPUT).unwrap();
-  ww.hide();
+  ww.hide()?;
 
   use std::{thread, time};
   thread::sleep(time::Duration::from_millis(100));
@@ -230,123 +183,11 @@ pub async fn CopyAndPaste(app: AppHandle, content: &str) -> Result<(), String> {
   Ok(())
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct CommandItem {
-  label: String,
-  cmd: String,        // node
-  arg: String,        // index.js
-  currentDir: String, // E:/rmst-sd
-}
-
-static Commands_Key: &str = "commands";
-
 #[tauri::command]
-pub async fn saveCommands(
-  app: tauri::AppHandle,
-  commands: Option<Vec<CommandItem>>,
-) -> Result<(), String> {
-  let appData = app.state::<AppData>();
-  let store = &appData.store;
-
-  let value = to_value(commands).unwrap_or(json!([]));
-
-  store.set(Commands_Key, value);
-  Ok(())
-}
-
-#[tauri::command]
-pub async fn getCommands(app: tauri::AppHandle) -> Result<Vec<CommandItem>, String> {
-  let appData = app.state::<AppData>();
-  let store = &appData.store;
-
-  let value = store.get(Commands_Key).unwrap_or(json!([]));
-
-  let commands: Vec<CommandItem> = from_value(value).unwrap_or_default();
-
-  Ok(commands)
-}
-
-#[tauri::command]
-pub async fn execCommand(app: tauri::AppHandle, label: String) -> Result<(), String> {
-  let appData = app.state::<AppData>();
-  let store = &appData.store;
-
-  let value = store.get(Commands_Key).unwrap_or(json!([]));
-
-  let commands: Vec<CommandItem> = from_value(value).unwrap_or_default();
-
-  let cmdItem = commands.iter().find(|item| item.label == label);
-
-  match cmdItem {
-    Some(cmdItem) => {
-      let bb = CommandItem {
-        label: cmdItem.label.clone(),
-        cmd: cmdItem.cmd.clone(),
-        arg: cmdItem.arg.clone(),
-        currentDir: cmdItem.currentDir.clone(),
-      };
-      let result = execCommandItem(bb);
-
-      dbg!(&result);
-      return result;
-    }
-    None => {}
-  }
-
-  Ok(())
-}
-
-fn execCommandItem(commandItem: CommandItem) -> Result<(), String> {
-  // 指定目标目录（可替换为实际路径）
-  let target_dir = PathBuf::from(commandItem.currentDir);
-
-  // 构建命令：node sc.js
-  let cmdName = commandItem.cmd.clone();
-  let mut cmd = Command::new(commandItem.cmd);
-  cmd.current_dir(target_dir); // 设置工作目录
-  let args: Vec<&str> = commandItem.arg.split_whitespace().collect();
-  for arg in args {
-    cmd.arg(arg);
-  }
-
-  // 执行命令并处理输出
-  match cmd.status() {
-    Ok(status) => {
-      if status.success() {
-        println!("命令执行成功");
-
-        Ok(())
-      } else {
-        let output: Result<std::process::Output, io::Error> = cmd.output();
-        if let Ok(op) = output {
-          let err = String::from_utf8(op.stderr).unwrap_or_default();
-          info!("{}", err);
-          return Err(err);
-        } else {
-          let str = format!("命令执行失败，退出码：{}", status);
-          info!("{}", str);
-
-          return Err(str);
-        }
-      }
-    }
-    Err(e) => {
-      eprintln!("启动进程失败：{}", e);
-
-      let error_msg = format!("Cmd execute command '{} {}", cmdName, e);
-      info!("{}", error_msg);
-
-      Err(error_msg)
-    }
-  }
-}
-
-#[tauri::command]
-pub fn trayMenu(app: tauri::AppHandle, menuKey: &str) {
+pub fn trayMenu(app: tauri::AppHandle, ww: tauri::WebviewWindow, menuKey: &str) -> Result<(), tauri::Error> {
   dbg!(&menuKey);
 
-  let tm_window = app.get_webview_window(window::WIN_LABEL_Tray_Menu).unwrap();
-  tm_window.hide();
+  ww.hide()?;
 
   match menuKey {
     "setting" => {
@@ -354,11 +195,11 @@ pub fn trayMenu(app: tauri::AppHandle, menuKey: &str) {
 
       if let Some(ww) = setting_window {
         if ww.is_minimized().unwrap_or(false) {
-          let _ = ww.unminimize();
+          ww.unminimize()?;
         }
 
-        let _ = ww.show();
-        let _ = ww.set_focus();
+        ww.show()?;
+        ww.set_focus()?;
       }
     }
     "restart" => {
@@ -370,5 +211,7 @@ pub fn trayMenu(app: tauri::AppHandle, menuKey: &str) {
     _ => {
       dbg!(&"未匹配的 menuKey");
     }
-  }
+  };
+
+  Ok(())
 }

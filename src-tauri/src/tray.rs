@@ -61,7 +61,7 @@ pub fn create_tray(app: &mut App) {
           let size = ww.outer_size().unwrap();
           ww.set_position(PhysicalPosition {
             x: position.x,
-            y: position.y - f64::from(size.height),
+            y: position.y - size.height as f64,
           });
         }
         _ => {}

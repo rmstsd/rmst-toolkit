@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use tauri::Manager;
-use tauri::{LogicalSize, WebviewWindow};
+use tauri::LogicalSize;
+use tauri::WebviewWindow;
 
 #[tauri::command]
 pub async fn hideWindow(window: tauri::Window) -> Result<(), tauri::Error> {
@@ -9,11 +9,15 @@ pub async fn hideWindow(window: tauri::Window) -> Result<(), tauri::Error> {
 }
 
 #[tauri::command]
-pub fn setWindowSize(app: tauri::AppHandle, label: &str, width: u32, height: u32) -> Result<(), Option> {
-  dbg!(label, width, height);
+pub fn setWindowSize(webview: WebviewWindow, width: Option<f64>, height: Option<f64>) -> Result<(), tauri::Error> {
+  let ww = webview;
+  let scale_factor = ww.scale_factor()?;
+  let size: LogicalSize<f64> = ww.inner_size()?.to_logical(scale_factor);
 
-  let ww = app.get_webview_window(label)?;
-  ww.set_size(LogicalSize { width, height }).unwrap();
+  let width = width.unwrap_or(size.width);
+  let height = height.unwrap_or(size.height);
+
+  ww.set_size(LogicalSize { width, height })?;
 
   Ok(())
 }

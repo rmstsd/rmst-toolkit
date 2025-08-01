@@ -15,6 +15,67 @@ use crate::{store::AppData, utils::readFile};
 
 static HistoryOpenedUrls_Key: &str = "historyOpenedUrls";
 
+#[tauri::command(async)]
+pub fn openWin(app: AppHandle, url: String) -> Result<(), tauri::Error> {
+  let label: i32 = random();
+  let label = label.to_string();
+
+  let ww: WebviewWindow = tauri::WebviewWindowBuilder::new(&app, label, tauri::WebviewUrl::App(url.clone().into()))
+    .title("rmst-tools")
+    .inner_size(1200.0, 800.0)
+    .build()
+    .expect("webview_window create error 啊");
+
+  let data = readFile("resources/ww-script.js").unwrap_or_default();
+  if !data.is_empty() {
+    ww.eval(data.as_str())?;
+  }
+
+  let appData = app.state::<AppData>();
+  let store = &appData.store;
+  let listVal = store.get(HistoryOpenedUrls_Key).unwrap_or(json!([]));
+
+  let mut list = from_value::<Vec<String>>(listVal).unwrap();
+
+  if !list.contains(&url) {
+    list.insert(0, url);
+
+    if list.len() > 5 {
+      list.pop();
+    }
+
+    store.set(HistoryOpenedUrls_Key, list);
+  };
+
+  Ok(())
+}
+
+#[tauri::command]
+pub fn getHistoryOpenedUrls(app: AppHandle) -> Result<Value, ()> {
+  let appData = app.state::<AppData>();
+  let store = &appData.store;
+
+  let val = store.get(HistoryOpenedUrls_Key);
+
+  match val {
+    Some(val) => Ok(val),
+    None => {
+      let emp = serde_json::from_value(json!([])).unwrap();
+
+      Ok(emp)
+    }
+  }
+}
+
+#[tauri::command]
+pub async fn clearHistoryOpenedUrls(app: AppHandle) -> Result<(), tauri::Error> {
+  let appData = app.state::<AppData>();
+  let store = &appData.store;
+  store.delete(HistoryOpenedUrls_Key);
+
+  Ok(())
+}
+
 #[tauri::command]
 pub async fn page_loaded(window: tauri::Window, title: String, icon: String) -> Result<(), tauri::Error> {
   info!("Page loaded with title: {}, {}", title, icon);
@@ -44,63 +105,4 @@ async fn download_icon(url: &str) -> Result<Image, Box<dyn std::error::Error>> {
   let image = Image::from_bytes(&bytes)?;
 
   Ok(image)
-}
-
-#[tauri::command(async)]
-pub fn openWin(app: AppHandle, url: String) {
-  dbg!(&url);
-
-  let label: i32 = random();
-  let label = label.to_string();
-
-  let ww: WebviewWindow = tauri::WebviewWindowBuilder::new(&app, label, tauri::WebviewUrl::App(url.clone().into()))
-    .title("rmst-tools")
-    .inner_size(1200.0, 800.0)
-    .build()
-    .expect("webview_window create error 啊");
-
-  let data = readFile("resources/ww-script.js").unwrap_or_default();
-  if !data.is_empty() {
-    ww.eval(data.as_str());
-  }
-
-  let appData = app.state::<AppData>();
-  let store = &appData.store;
-  let listVal = store.get(HistoryOpenedUrls_Key).unwrap_or(json!([]));
-
-  let mut list = from_value::<Vec<String>>(listVal).unwrap();
-
-  if !list.contains(&url) {
-    list.insert(0, url);
-
-    if list.len() > 5 {
-      list.pop();
-    }
-
-    store.set(HistoryOpenedUrls_Key, list);
-  }
-}
-
-#[tauri::command]
-pub fn getHistoryOpenedUrls(app: AppHandle) -> Value {
-  let appData = app.state::<AppData>();
-  let store = &appData.store;
-  let val = store.get(HistoryOpenedUrls_Key);
-
-  match val {
-    Some(val) => val,
-    None => {
-      let emp = serde_json::from_value(json!([])).unwrap();
-
-      emp
-    }
-  }
-}
-
-#[tauri::command]
-pub async fn clearHistoryOpenedUrls(app: AppHandle) -> Result<(), String> {
-  let appData = app.state::<AppData>();
-  let store = &appData.store;
-  store.delete(HistoryOpenedUrls_Key);
-  Ok(())
 }

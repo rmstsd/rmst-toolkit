@@ -22,7 +22,7 @@ export default function QuickInput() {
   })
 
   const updateSize = () => {
-    invoke('setWindowSize', { size: sizeRef.current })
+    invoke('setWindowSize', { width: sizeRef.current.width, height: sizeRef.current.height })
   }
 
   return (

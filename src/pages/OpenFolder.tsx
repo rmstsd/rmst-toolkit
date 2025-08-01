@@ -8,11 +8,7 @@ import { SettingData } from '../type'
 import { invoke } from '@tauri-apps/api/core'
 
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
-
-interface Props {
-  onFocus?: () => void
-  onBlur?: () => void
-}
+import { isProd } from '../utils'
 
 const useTauriFocus = () => {
   useEffect(() => {
@@ -24,7 +20,9 @@ const useTauriFocus = () => {
         clearTimeout(timer)
       } else {
         timer = setTimeout(() => {
-          appWindow.hide()
+          if (isProd) {
+            appWindow.hide()
+          }
         }, 10)
       }
     }

@@ -11,26 +11,15 @@ use tauri_plugin_dialog::DialogExt;
 use crate::{commands::SettingData, store::AppData};
 
 static Setting_Key: &str = "setting";
-static Commands_Key: &str = "commands";
 
 #[tauri::command]
 pub fn importSetting(app: AppHandle) -> Result<(), ()> {
-  dbg!(&7785);
-
-  let file_path = app
-    .dialog()
-    .file()
-    .add_filter("", &["json"])
-    .blocking_pick_file();
+  let file_path = app.dialog().file().add_filter("", &["json"]).blocking_pick_file();
 
   if let Some(path) = file_path {
     let path: String = path.to_string();
 
     println!("{path:#?}");
-
-    // let content = fs::read_to_string(path).expect("Unable to read file");
-    // let data: SettingData = serde_json::from_str(content.as_str()).unwrap();
-    // dbg!(&data);
 
     let opened = fs::File::open(path);
 
@@ -45,16 +34,13 @@ pub fn importSetting(app: AppHandle) -> Result<(), ()> {
         return Ok(());
       }
     }
-
-    // let content: SettingData = serde_json::from_reader(fs::File::open(path).unwrap()).unwrap();
-    // saveSetting(app, content);
   }
 
   return Err(());
 }
 
 #[tauri::command]
-pub fn exportSetting(app: AppHandle) -> Result<(), ()> {
+pub fn exportSetting(app: AppHandle) -> Result<(), String> {
   dbg!("exportSetting");
   let file_path = app
     .dialog()
@@ -78,7 +64,7 @@ pub fn exportSetting(app: AppHandle) -> Result<(), ()> {
     return Ok(());
   }
 
-  return Err(());
+  return Err("".to_string());
 }
 
 #[tauri::command]

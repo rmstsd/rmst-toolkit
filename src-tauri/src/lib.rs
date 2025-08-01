@@ -1,7 +1,7 @@
-// #![allow(warnings)]
+#![allow(non_upper_case_globals, non_snake_case)]
 
-#[allow(non_upper_case_globals)]
 //
+
 mod cmds;
 mod commands;
 mod shortcut;
@@ -19,7 +19,7 @@ use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_log::{Target, TargetKind, TimezoneStrategy};
 
-use crate::{cmds::common, cmds::open_win, cmds::setting, cmds::updater};
+use crate::{cmds::command, cmds::common, cmds::open_win, cmds::setting, cmds::updater};
 use store::initStore;
 use window::WIN_LABEL_OPEN_FOLDER;
 
@@ -62,6 +62,10 @@ pub fn run() {
       setting::getSetting,
       setting::clearStore,
       //
+      command::saveCommands,
+      command::getCommands,
+      command::execCommand,
+      //
       updater::checkUpdate,
       updater::download_and_install,
       //
@@ -71,10 +75,6 @@ pub fn run() {
       commands::killPort,
       //
       commands::CopyAndPaste,
-      //
-      commands::saveCommands,
-      commands::getCommands,
-      commands::execCommand,
       //
       commands::trayMenu,
     ])
@@ -104,9 +104,7 @@ pub fn run() {
           }
 
           let app = window.app_handle();
-          app
-            .emit_to(WIN_LABEL_OPEN_FOLDER, "focusChanged", focused)
-            .unwrap();
+          app.emit_to(WIN_LABEL_OPEN_FOLDER, "focusChanged", focused).unwrap();
         }
         _ => {}
       };
@@ -136,9 +134,9 @@ pub fn run() {
       }
 
       #[cfg(desktop)]
-      app.handle().plugin(tauri_plugin_single_instance::init(
-        |app: &AppHandle, args, cwd| {},
-      ));
+      app
+        .handle()
+        .plugin(tauri_plugin_single_instance::init(|app: &AppHandle, args, cwd| {}));
 
       tray::create_tray(app);
       shortcut::create_shortcut(app);

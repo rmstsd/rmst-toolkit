@@ -23,8 +23,8 @@ pub fn create_shortcut(app: &mut App) {
                 let monitorSize = mainMonitor.size();
                 let wwWidth = ww.outer_size().unwrap().width;
 
-                let x: u32 = monitorSize.width / 2 - wwWidth / 2;
-                let y: u32 = monitorSize.height / 4;
+                let x: i32 = monitorSize.width as i32 / 2 - wwWidth as i32 / 2;
+                let y: i32 = monitorSize.height as i32 / 4;
                 let pos = ww.outer_position().unwrap();
                 ww.set_position(PhysicalPosition { x, y });
               };
