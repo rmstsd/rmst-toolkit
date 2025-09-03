@@ -56,10 +56,23 @@ pub fn create_shortcut(app: &mut App) {
               if ww.is_visible().unwrap_or(false) {
                 ww.hide().unwrap();
               } else {
-                let pos = ww.cursor_position().unwrap();
+                let mut pos = ww.cursor_position().unwrap();
+
+                let currentMonitor = ww.current_monitor().unwrap().unwrap();
+                let wa = currentMonitor.work_area();
+
+                let wwSize = ww.outer_size().unwrap();
+
+                if (pos.y + wwSize.height as f64 > wa.size.height as f64) {
+                  pos.y = pos.y - wwSize.height as f64;
+                }
+                if (pos.x + wwSize.width as f64 > wa.size.width as f64) {
+                  pos.x = pos.x - wwSize.width as f64;
+                }
+
                 ww.set_position(pos).unwrap();
                 ww.show().unwrap();
-                ww.set_focus().unwrap();
+                // ww.set_focus().unwrap();
               }
             }
             ShortcutState::Released => {

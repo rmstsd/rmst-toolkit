@@ -171,8 +171,8 @@ pub async fn CopyAndPaste(app: AppHandle, content: &str) -> Result<(), tauri::Er
   let ww = app.get_webview_window(WIN_LABEL_QUICK_INPUT).unwrap();
   ww.hide()?;
 
-  use std::{thread, time};
-  thread::sleep(time::Duration::from_millis(100));
+  // use std::{thread, time};
+  // thread::sleep(time::Duration::from_millis(100));
 
   let mut enigo = Enigo::new(&Settings::default()).unwrap();
   // Paste

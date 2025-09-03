@@ -30,7 +30,7 @@ pub fn create_window(app: &mut App) {
   }
 
   WebviewWindowBuilder::new(app, WIN_LABEL_QUICK_INPUT, WebviewUrl::App("index.html/#quickInput".into()))
-    .skip_taskbar(false)
+    .skip_taskbar(true)
     .visible(false)
     .center()
     .inner_size(400.0, 200.0)
@@ -39,6 +39,7 @@ pub fn create_window(app: &mut App) {
     .always_on_top(true)
     .decorations(false)
     .resizable(false)
+    .focusable(false)
     .build()
     .expect("#quickInput webview_window create error 错误");
 
