@@ -1,3 +1,5 @@
+use log::info;
+use std::process::Command;
 use tauri::{App, AppHandle, PhysicalPosition};
 use tauri::{Emitter, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
@@ -9,6 +11,7 @@ pub fn create_shortcut(app: &mut App) {
   let alt_space_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::Space);
   let alt_v_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyV);
   let alt_r_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyR);
+  let alt_e_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyE);
 
   let _ = app.handle().plugin(
     tauri_plugin_global_shortcut::Builder::new()
@@ -81,7 +84,7 @@ pub fn create_shortcut(app: &mut App) {
           }
         }
         if shortcut == &alt_r_shortcut {
-          dbg!(&"alt + r");
+          info!("alt + r");
           match event.state() {
             ShortcutState::Pressed => {
               let ww = _app.get_webview_window(WIN_LABEL_SETTING).unwrap();
@@ -99,6 +102,31 @@ pub fn create_shortcut(app: &mut App) {
             }
           }
         }
+        if shortcut == &alt_e_shortcut {
+          info!("alt + e");
+          match event.state() {
+            ShortcutState::Pressed => {
+              let clipboard_text = _app.clipboard().read_text().unwrap_or_default();
+              let text = clipboard_text.trim();
+
+              if text.is_empty() {
+                return;
+              }
+
+              // let path = Path::new(text);
+              let path = text.replace("/", r"\");
+              info!("explorer /select, {:?}", path.as_str());
+              // 仅 windows
+              Command::new("explorer")
+                .args(["/select,", path.as_str()]) // The comma after select is not a typo
+                .spawn()
+                .unwrap();
+            }
+            ShortcutState::Released => {
+              // println!("Ctrl-N Released!");
+            }
+          }
+        }
       })
       .build(),
   );
@@ -106,4 +134,5 @@ pub fn create_shortcut(app: &mut App) {
   let _ = app.global_shortcut().register(alt_space_shortcut);
   let _ = app.global_shortcut().register(alt_v_shortcut);
   let _ = app.global_shortcut().register(alt_r_shortcut);
+  let _ = app.global_shortcut().register(alt_e_shortcut);
 }
