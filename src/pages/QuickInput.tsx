@@ -12,14 +12,19 @@ export default function QuickInput() {
   const sizeRef = useRef({ width: 0, height: 0 })
 
   useEffect(() => {
-    invoke('getSetting').then((data: SettingData) => {
-      setNotes(data.notes)
-    })
+    updateData()
   }, [])
 
   useFocus(({ appWindow, focused }) => {
+    updateData()
     updateSize()
   })
+
+  const updateData = () => {
+    invoke('getSetting').then((data: SettingData) => {
+      setNotes(data.notes)
+    })
+  }
 
   const updateSize = () => {
     invoke('setWindowSize', { width: sizeRef.current.width, height: sizeRef.current.height })
@@ -45,7 +50,7 @@ export default function QuickInput() {
               size="small"
               key={index}
               type="default"
-              className="!border-gray-300 !text-gray-800"
+              className="!border-gray-300 !text-gray-800 whitespace-normal h-auto"
               onClick={() => invoke('CopyAndPaste', { content: item })}
             >
               {item}

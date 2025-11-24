@@ -19,8 +19,6 @@ pub fn importSetting(app: AppHandle) -> Result<(), ()> {
   if let Some(path) = file_path {
     let path: String = path.to_string();
 
-    println!("{path:#?}");
-
     let opened = fs::File::open(path);
 
     if let Ok(val) = opened {
@@ -50,9 +48,6 @@ pub fn exportSetting(app: AppHandle) -> Result<(), String> {
     .blocking_save_file();
 
   if let Some(file_path) = file_path {
-    println!("{file_path:#?}");
-    dbg!(file_path.to_string());
-
     let appData = app.state::<AppData>();
     let store = &appData.store;
     let ans = store.get(Setting_Key).unwrap_or(json!({}));
@@ -72,14 +67,10 @@ pub fn saveSetting(app: AppHandle, settingData: SettingData) {
   let appData = app.state::<AppData>();
   let store = &appData.store;
 
-  dbg!("saveSetting", &settingData);
-
   let val = to_value(settingData);
 
   match val {
     Ok(value) => {
-      dbg!(&value);
-
       store.set(Setting_Key, value);
     }
     Err(err) => {

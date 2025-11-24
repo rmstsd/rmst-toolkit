@@ -5,6 +5,15 @@ description = "A Tauri App"
 authors = ["rmstsd"]
 edition = "2021"
 
+[profile.dev]
+incremental = true       # 增量编译（仅重新编译修改的模块）
+parallel-compiler = true # 并行编译（利用多核心CPU）
+codegen-units = 16       # 增加代码生成单元（牺牲少量优化换速度）
+debug = 1                # 仅生成基础调试信息（debug=2会大幅增加编译时间）
+
+[profile.dev.package."*"]
+opt-level = 0 # 依赖库不优化（加快编译）
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]

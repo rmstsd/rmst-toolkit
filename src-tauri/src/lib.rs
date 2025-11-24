@@ -65,6 +65,7 @@ pub fn run() {
       command::saveCommands,
       command::getCommands,
       command::execCommand,
+      command::removeFolder,
       //
       updater::checkUpdate,
       updater::download_and_install,

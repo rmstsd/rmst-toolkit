@@ -40,11 +40,19 @@ pub fn killPort(port: u16) -> Result<bool, bool> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct NodeModulesFolder {
+  pub path: Option<String>,
+  pub selected: Option<bool>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SettingData {
   cmdPath: Option<String>,
   editorPaths: Option<Vec<String>>,
   projectPaths: Option<Vec<String>>,
   notes: Option<Vec<String>>,
+
+  nodeModulesFolders: Option<Vec<NodeModulesFolder>>,
 }
 
 use std::process::Command;
@@ -106,6 +114,7 @@ pub fn getProjectNamesTree(app: AppHandle) -> Value {
     editorPaths: Some(vec![]),
     projectPaths: Some(vec![]),
     notes: Some(vec![]),
+    nodeModulesFolders: Some(vec![]),
   });
 
   let projectPaths: Vec<String> = settingData.projectPaths.unwrap_or(vec![]);

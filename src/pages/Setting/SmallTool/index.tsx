@@ -4,6 +4,7 @@ import KillPortTool from './KillPortTool'
 import OpenWindow from './OpenWindow'
 import GitSetting from './GitSetting'
 import ExecCommand from './ExecCommand'
+import Remove_node_modules from './Remove_node_modules'
 
 export default function SmallTool() {
   return (
@@ -19,6 +20,9 @@ export default function SmallTool() {
       <ExecCommand />
 
       {/* <GitSetting /> */}
+
+      <Divider />
+      <Remove_node_modules />
     </div>
   )
 }

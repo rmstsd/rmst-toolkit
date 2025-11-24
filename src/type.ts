@@ -1,11 +1,18 @@
 import 'react'
 
+interface NodeModulesFolder {
+  path: string
+  selected: boolean
+}
+
 export type SettingData = {
   editorPaths: string[]
   cmdPath: string
   projectPaths: string[]
   notes: string[]
   historyOpenedUrls: string[]
+
+  nodeModulesFolders?: NodeModulesFolder[]
 }
 
 export type AppBaseInfo = {

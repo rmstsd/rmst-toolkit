@@ -1,3 +1,4 @@
+use log::error;
 use log::info;
 use serde::Deserialize;
 use serde::Serialize;
@@ -7,8 +8,10 @@ use serde_json::to_value;
 use std::io;
 use std::path::PathBuf;
 use std::process;
+use std::process::Command;
 use tauri::Manager;
 
+use crate::commands::NodeModulesFolder;
 use crate::store::AppData;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -117,4 +120,37 @@ fn execCommandItem(commandItem: CommandItem) -> Result<(), String> {
       Err(error_msg)
     }
   }
+}
+
+#[tauri::command]
+pub fn removeFolder(nodeModulesFolders: Vec<NodeModulesFolder>) {
+  nodeModulesFolders.iter().for_each(|item| {
+    if (!item.selected.unwrap_or_default()) {
+      return;
+    }
+
+    let target_dir = PathBuf::from(item.path.clone().unwrap_or_default());
+
+    let output = Command::new("powershell")
+      .current_dir(target_dir)
+      .arg("-Command")
+      .arg("Remove-Item -Recurse -Force node_modules")
+      .output();
+
+    match output {
+      Ok(output) => {
+        if output.status.success() {
+          info!("成功删除目录 'node_modules'");
+        } else {
+          error!(
+            "删除目录 'node_modules' 失败. Error: {:?}",
+            String::from_utf8_lossy(&output.stderr)
+          );
+        }
+      }
+      Err(e) => {
+        error!("执行失败 Failed to execute command. Error: {}", e);
+      }
+    }
+  });
 }
