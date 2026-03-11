@@ -19,7 +19,7 @@ use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_log::{Target, TargetKind, TimezoneStrategy};
 
-use crate::{cmds::command, cmds::common, cmds::open_win, cmds::setting, cmds::updater};
+use crate::{cmds::command, cmds::common, cmds::open_win, cmds::open_with_terminal, cmds::setting, cmds::updater};
 use store::initStore;
 use window::WIN_LABEL_OPEN_FOLDER;
 
@@ -78,6 +78,7 @@ pub fn run() {
       commands::CopyAndPaste,
       //
       commands::trayMenu,
+      open_with_terminal::open_with_terminal,
     ])
     .on_window_event(|window, evt| {
       match evt {

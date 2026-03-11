@@ -132,7 +132,7 @@ const OpenFolder = () => {
     invoke('hideWindow')
 
     if (ctrlKey) {
-      // openWithTerminal(projectPath)
+      invoke('open_with_terminal', { projectPath })
     } else if (shiftKey) {
       // openWithVscode(projectPath, editorPaths[activeEditorIndex].path)
       // openWithTerminal(projectPath)
@@ -182,8 +182,14 @@ const OpenFolder = () => {
             <div className="flex items-center gap-2">
               <Radio.Group
                 value={activeEditorIndex}
-                onChange={value => {
-                  // openWithVscode(flatDirNames[selectIndex], editorPaths[value].path)
+                onChange={() => {
+                  const projectPath = flatDirNames[selectIndex]
+                  if (!projectPath) {
+                    return
+                  }
+
+                  invoke('hideWindow')
+                  invoke('openFolderEditor', { projectPath, editorPath: editorPaths[activeEditorIndex] })
                 }}
                 type="button"
                 name="lang"
