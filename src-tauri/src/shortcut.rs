@@ -87,13 +87,15 @@ pub fn create_shortcut(app: &mut App) {
           info!("alt + r");
           match event.state() {
             ShortcutState::Pressed => {
+              let text = get_global_selected_text();
+              if text.is_empty() {
+                return;
+              }
+
               let ww = _app.get_webview_window(WIN_LABEL_SETTING).unwrap();
               ww.unminimize().unwrap();
               ww.show().unwrap();
               ww.set_focus().unwrap();
-
-              let clipboard_text = _app.clipboard().read_text().unwrap_or_default();
-              let text = clipboard_text.trim().to_string();
 
               _app.emit_to(WIN_LABEL_SETTING, "showQrCode", text).unwrap();
             }
@@ -106,9 +108,7 @@ pub fn create_shortcut(app: &mut App) {
           info!("alt + e");
           match event.state() {
             ShortcutState::Pressed => {
-              let text = get_selected_text::get_selected_text().unwrap_or_default();
-              let text = text.trim();
-
+              let text = get_global_selected_text();
               if text.is_empty() {
                 return;
               }
@@ -134,4 +134,9 @@ pub fn create_shortcut(app: &mut App) {
   let _ = app.global_shortcut().register(alt_v_shortcut);
   let _ = app.global_shortcut().register(alt_r_shortcut);
   let _ = app.global_shortcut().register(alt_e_shortcut);
+}
+
+fn get_global_selected_text() -> String {
+  let text = get_selected_text::get_selected_text().unwrap_or_default();
+  text.trim().to_string()
 }
