@@ -59,18 +59,24 @@ use std::process::Command;
 fn kill_process_by_port(port: u16) -> Result<(), std::io::Error> {
   #[cfg(target_os = "windows")]
   {
-    // 在 Windows 上查找占用指定端口的进程 ID
-    let output = Command::new("cmd")
-      .args(&["/C", &format!("netstat -ano | findstr :{}", port)])
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+    let output = Command::new("netstat")
+      .args(&["-ano"])
+      .creation_flags(CREATE_NO_WINDOW)
       .output()?;
     let output_str = String::from_utf8_lossy(&output.stdout);
+    let port_suffix = format!(":{}", port);
     for line in output_str.lines() {
       let parts: Vec<&str> = line.split_whitespace().collect();
-      if parts.len() >= 5 {
-        let pid_str = parts[4];
-        if let Ok(pid) = pid_str.parse::<u32>() {
-          // 杀死找到的进程
-          Command::new("taskkill").args(&["/F", "/PID", &pid.to_string()]).output()?;
+      // netstat -ano 格式: Proto  Local Address  Foreign Address  State  PID
+      if parts.len() >= 5 && parts[1].ends_with(&port_suffix) {
+        if let Ok(pid) = parts[4].parse::<u32>() {
+          Command::new("taskkill")
+            .args(&["/F", "/PID", &pid.to_string()])
+            .creation_flags(CREATE_NO_WINDOW)
+            .output()?;
         }
       }
     }
@@ -158,12 +164,15 @@ struct NamesTree {
 pub async fn openFolderEditor(app: tauri::AppHandle, projectPath: String, editorPath: String) -> Result<(), String> {
   dbg!(&projectPath);
   dbg!(&editorPath);
+  // 拼接字符串
+  let cmd_str = format!("{} {}", editorPath, projectPath);
+  let mut command = execute::shell(cmd_str);
+  let output = command.output().unwrap();
 
-  // 执行外部命令示例
-  let output = Command::new(editorPath)
-    .arg(projectPath)
-    .output()
-    .expect("Failed to execute command");
+  // let output = Command::new(editorPath)
+  //   .arg(projectPath)
+  //   .output()
+  //   .expect("Failed to execute command");
 
   if output.status.success() {
     println!("打开成功");
