@@ -106,14 +106,13 @@ pub fn create_shortcut(app: &mut App) {
           info!("alt + e");
           match event.state() {
             ShortcutState::Pressed => {
-              let clipboard_text = _app.clipboard().read_text().unwrap_or_default();
-              let text = clipboard_text.trim();
+              let text = get_selected_text::get_selected_text().unwrap_or_default();
+              let text = text.trim();
 
               if text.is_empty() {
                 return;
               }
 
-              // let path = Path::new(text);
               let path = text.replace("/", r"\");
               info!("explorer /select, {:?}", path.as_str());
               // 仅 windows

@@ -2,18 +2,15 @@ use enigo::{
   Direction::{Click, Press, Release},
   Enigo, Key, Keyboard, Settings,
 };
-use log::info;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::from_value;
-use serde_json::json;
 use serde_json::to_value;
 use serde_json::Value;
 use std::fs::metadata;
 use std::fs::read_dir;
-use std::io;
+use std::os::windows::process::CommandExt;
 use std::path::Path;
-use std::path::PathBuf;
 use std::vec;
 use tauri::AppHandle;
 use tauri::Manager;
@@ -166,13 +163,12 @@ pub async fn openFolderEditor(app: tauri::AppHandle, projectPath: String, editor
   dbg!(&editorPath);
   // 拼接字符串
   let cmd_str = format!("{} {}", editorPath, projectPath);
-  let mut command = execute::shell(cmd_str);
-  let output = command.output().unwrap();
 
-  // let output = Command::new(editorPath)
-  //   .arg(projectPath)
-  //   .output()
-  //   .expect("Failed to execute command");
+  let output = Command::new("cmd")
+    .args(["/C", &cmd_str])
+    .creation_flags(0x08000000) // CREATE_NO_WINDOW
+    .output()
+    .unwrap();
 
   if output.status.success() {
     println!("打开成功");
