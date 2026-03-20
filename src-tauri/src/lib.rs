@@ -79,6 +79,7 @@ pub fn run() {
       //
       commands::trayMenu,
       open_with_terminal::open_with_terminal,
+      common::open_in_explorer,
     ])
     .on_window_event(|window, evt| {
       match evt {

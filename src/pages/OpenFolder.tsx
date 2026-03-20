@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Input, Message, Radio } from '@arco-design/web-react'
+import { Button, Input, Message, Radio } from '@arco-design/web-react'
 import path from 'path-browserify'
 import clsx from 'clsx'
 
@@ -93,12 +93,6 @@ const OpenFolder = () => {
       }
     } else {
       if (evt.key === 'Enter') {
-        if (searchUrl) {
-          // openExternal(searchUrl)
-
-          return
-        }
-
         const projectPath = flatDirNames[selectIndex]
         onItemClick(evt.ctrlKey, evt.shiftKey, projectPath)
       } else if (['ArrowLeft', 'ArrowRight'].includes(evt.code)) {
@@ -143,22 +137,6 @@ const OpenFolder = () => {
 
   const flatDirNames = search(dirNamesTree, wd)
 
-  const { tipInfo, searchUrl } = (() => {
-    const [shortcutWd] = wd?.split(' ') || []
-    const defaultList = []
-    const matchItem = defaultList.find(item => item.shortcutWd.map(o => o.toLowerCase()).includes(shortcutWd.toLowerCase()))
-
-    // 如果目的是搜索
-    if (matchItem && wd.at(shortcutWd.length) === ' ') {
-      const searchWd = wd.slice(shortcutWd.length + 1)
-      const searchUrl = matchItem.searchLink + searchWd
-
-      return { tipInfo: `用${matchItem.title}搜索`, searchUrl }
-    }
-
-    return { tipInfo: '打开目录', searchUrl: undefined }
-  })()
-
   return (
     <ResizeObserver
       onResize={size => {
@@ -175,10 +153,10 @@ const OpenFolder = () => {
               setSelectIndex(0)
               setWd(value)
             }}
-            className="h-[60px] border-none text-[18px]"
+            className="op-dir-input h-[60px] border-none text-[18px]"
             onKeyDown={onKeyDown}
           />
-          <div className="s-tipInfo ">
+          <div className="s-tipInfo" data-tauri-drag-region>
             <div className="flex items-center gap-2">
               <Radio.Group
                 value={activeEditorIndex}
@@ -199,8 +177,18 @@ const OpenFolder = () => {
                 }))}
               />
             </div>
-            <span className="h-full flex items-center" data-tauri-drag-region>
-              {tipInfo}
+            <span className="flex items-center">
+              <Button
+                size="small"
+                type="outline"
+                className="px-2"
+                onClick={() => {
+                  invoke('hideWindow')
+                  invoke('open_in_explorer', { path: flatDirNames[selectIndex] })
+                }}
+              >
+                explorer
+              </Button>
             </span>
           </div>
         </section>

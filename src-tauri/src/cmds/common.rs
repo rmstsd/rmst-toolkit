@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use tauri::LogicalSize;
 use tauri::WebviewWindow;
+use tokio::process::Command;
 
 #[tauri::command]
 pub async fn hideWindow(window: tauri::Window) -> Result<(), tauri::Error> {
@@ -53,4 +54,14 @@ pub struct AppInfo {
   authors: &'static str,
   description: &'static str,
   crate_name: &'static str,
+}
+
+#[tauri::command]
+pub fn open_in_explorer(path: String) {
+  let path = path.replace("/", r"\");
+  Command::new("explorer")
+    // .args(["/select,", path.as_str()]) // 不进入 且 选中
+    .args([path.as_str()]) // 进入
+    .spawn()
+    .unwrap();
 }

@@ -5,6 +5,7 @@ use tauri::{Emitter, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
+use crate::cmds::common::open_in_explorer;
 use crate::window::{WIN_LABEL_OPEN_FOLDER, WIN_LABEL_QUICK_INPUT, WIN_LABEL_SETTING};
 
 pub fn create_shortcut(app: &mut App) {
@@ -113,13 +114,9 @@ pub fn create_shortcut(app: &mut App) {
                 return;
               }
 
-              let path = text.replace("/", r"\");
-              info!("explorer /select, {:?}", path.as_str());
-              // 仅 windows
-              Command::new("explorer")
-                .args(["/select,", path.as_str()]) // The comma after select is not a typo
-                .spawn()
-                .unwrap();
+              info!("explorer /select, {:?}", text.as_str());
+
+              open_in_explorer(text);
             }
             ShortcutState::Released => {
               // println!("Ctrl-N Released!");
