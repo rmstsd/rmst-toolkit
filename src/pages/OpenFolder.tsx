@@ -182,14 +182,14 @@ const OpenFolder = () => {
             <div className="flex items-center gap-2">
               <Radio.Group
                 value={activeEditorIndex}
-                onChange={() => {
+                onChange={_activeEditorIndex => {
                   const projectPath = flatDirNames[selectIndex]
                   if (!projectPath) {
                     return
                   }
 
                   invoke('hideWindow')
-                  invoke('openFolderEditor', { projectPath, editorPath: editorPaths[activeEditorIndex] })
+                  invoke('openFolderEditor', { projectPath, editorPath: editorPaths[_activeEditorIndex] })
                 }}
                 type="button"
                 name="lang"
