@@ -4525,7 +4525,7 @@ dependencies = [
 
 [[package]]
 name = "rmst-toolkit"
-version = "0.1.51"
+version = "0.1.52"
 dependencies = [
  "enigo 0.3.0",
  "get-selected-text",
