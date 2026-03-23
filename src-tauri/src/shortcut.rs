@@ -13,6 +13,7 @@ pub fn create_shortcut(app: &mut App) {
   let alt_v_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyV);
   let alt_r_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyR);
   let alt_e_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyE);
+  let alt_u_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyU);
 
   let _ = app.handle().plugin(
     tauri_plugin_global_shortcut::Builder::new()
@@ -123,6 +124,39 @@ pub fn create_shortcut(app: &mut App) {
             }
           }
         }
+
+        if shortcut == &alt_u_shortcut {
+          match event.state() {
+            ShortcutState::Pressed => {
+              dbg!("alt + u");
+
+              std::thread::spawn(|| {
+                use pusher::PusherBuilder;
+
+                let rt = tokio::runtime::Runtime::new().unwrap();
+                let mut pusher = PusherBuilder::new("2131050", "b0486ed6384e83d43689", "b2f0f0113d5abef2d6e2")
+                  .host("api-ap1.pusher.com")
+                  .finalize();
+
+                let url = get_global_selected_text();
+                if !isUrl(url.as_str()) {
+                  return;
+                }
+
+                let payload = serde_json::json!({"url": url});
+
+                let evtName = "open-url";
+                match rt.block_on(pusher.trigger("my-channel", evtName, payload)) {
+                  Ok(res) => info!("pusher trigger ok"),
+                  Err(err) => info!("pusher trigger err: {}", err),
+                }
+              });
+            }
+            ShortcutState::Released => {
+              // println!("Ctrl-N Released!");
+            }
+          }
+        }
       })
       .build(),
   );
@@ -131,9 +165,14 @@ pub fn create_shortcut(app: &mut App) {
   let _ = app.global_shortcut().register(alt_v_shortcut);
   let _ = app.global_shortcut().register(alt_r_shortcut);
   let _ = app.global_shortcut().register(alt_e_shortcut);
+  let _ = app.global_shortcut().register(alt_u_shortcut);
 }
 
 fn get_global_selected_text() -> String {
   let text = get_selected_text::get_selected_text().unwrap_or_default();
   text.trim().to_string()
+}
+
+fn isUrl(text: &str) -> bool {
+  text.contains('.') || text.starts_with("http://") || text.starts_with("https://")
 }

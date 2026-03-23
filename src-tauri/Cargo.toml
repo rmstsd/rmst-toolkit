@@ -54,3 +54,4 @@ tauri-plugin-autostart = "2"
 
 image = "0.25"
 get-selected-text = "0.1.6"
+pusher = "0.4.5"
