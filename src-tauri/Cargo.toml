@@ -1,6 +1,6 @@
 [package]
 name = "rmst-toolkit"
-version = "0.1.54"
+version = "0.1.55"
 description = "A Tauri App"
 authors = ["rmstsd"]
 edition = "2021"
