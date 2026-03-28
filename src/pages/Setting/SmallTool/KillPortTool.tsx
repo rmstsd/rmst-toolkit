@@ -40,7 +40,7 @@ export default function KillPortTool() {
   return (
     <Form form={form}>
       <Form.Item label="端口号" field="port" rules={[{ required: true }]}>
-        <InputNumber ref={ref} placeholder="端口号" />
+        <InputNumber ref={ref} placeholder="端口号" style={{ width: 100 }} />
       </Form.Item>
 
       <Form.Item label=" ">
