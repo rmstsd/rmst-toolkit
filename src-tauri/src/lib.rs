@@ -19,7 +19,7 @@ use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_log::{Target, TargetKind, TimezoneStrategy};
 
-use crate::{cmds::command, cmds::common, cmds::open_win, cmds::open_with_terminal, cmds::setting, cmds::updater};
+use crate::{cmds::command, cmds::common, cmds::open_win, cmds::open_with_terminal, cmds::proxy_watcher, cmds::setting, cmds::updater};
 use store::initStore;
 use window::WIN_LABEL_OPEN_FOLDER;
 
@@ -143,6 +143,8 @@ pub fn run() {
 
       tray::create_tray(app);
       shortcut::create_shortcut(app);
+
+      proxy_watcher::start_proxy_watcher();
 
       Ok(())
     })
